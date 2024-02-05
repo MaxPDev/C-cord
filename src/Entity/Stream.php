@@ -22,6 +22,10 @@ class Stream
     #[ORM\Column(length: 255)]
     private ?string $color_txt = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Room $room = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -59,6 +63,18 @@ class Stream
     public function setColorTxt(string $color_txt): static
     {
         $this->color_txt = $color_txt;
+
+        return $this;
+    }
+
+    public function getRoom(): ?Room
+    {
+        return $this->room;
+    }
+
+    public function setRoom(?Room $room): static
+    {
+        $this->room = $room;
 
         return $this;
     }
