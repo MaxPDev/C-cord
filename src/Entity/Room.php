@@ -22,12 +22,20 @@ class Room
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'room')]
     private Collection $user;
+
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Message::class, orphanRemoval: true)]
+    private Collection $messages;
+
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Stream::class, orphanRemoval: true)]
+    private Collection $streams;
 
     public function __construct()
     {
         $this->user = new ArrayCollection();
+        $this->messages = new ArrayCollection();
+        $this->streams = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -79,6 +87,66 @@ class Room
     public function removeUser(User $user): static
     {
         $this->user->removeElement($user);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Message $message): static
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
+            $message->setRoom($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Message $message): static
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getRoom() === $this) {
+                $message->setRoom(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Stream>
+     */
+    public function getStreams(): Collection
+    {
+        return $this->streams;
+    }
+
+    public function addStream(Stream $stream): static
+    {
+        if (!$this->streams->contains($stream)) {
+            $this->streams->add($stream);
+            $stream->setRoom($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStream(Stream $stream): static
+    {
+        if ($this->streams->removeElement($stream)) {
+            // set the owning side to null (unless already changed)
+            if ($stream->getRoom() === $this) {
+                $stream->setRoom(null);
+            }
+        }
 
         return $this;
     }
