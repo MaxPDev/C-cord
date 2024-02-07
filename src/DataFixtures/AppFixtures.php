@@ -20,7 +20,7 @@ class AppFixtures extends Fixture
         $room1 = new Room();
         $room1->setName("Appart");
         $room1->setDescription("Organisons-nous !");
-
+        
         $room2 = new Room();
         $room2->setName("Travail");
         $room2->setDescription("Projet concorde");
@@ -28,14 +28,17 @@ class AppFixtures extends Fixture
         $room3 = new Room();
         $room3->setName("Sport");
         $room3->setDescription("Entrainements et vidéos");
-
+        
         $user1 = new User();
         $user1->setPseudo("Max");
         $user1->setIsAdmin(true);
-
+        
         $user2 = new User();
         $user2->setPseudo("Lika");
         $user2->setIsAdmin(true);
+        
+        $room1->addUser($user1);
+        $room1->addUser($user2);
 
         $stream1 = new Stream();
         $stream1->setName("Général");
