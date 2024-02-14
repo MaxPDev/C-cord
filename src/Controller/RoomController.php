@@ -16,7 +16,8 @@ class RoomController extends AbstractController
     #[Route('/api/rooms', name: 'rooms', methods: ['GET'])]
     public function getRooms(
         RoomRepository $roomRepository,
-        SerializerInterface $serializer): JsonResponse
+        SerializerInterface $serializer
+    ): JsonResponse
     {
         
         $rooms = $roomRepository->findAll();
@@ -27,7 +28,8 @@ class RoomController extends AbstractController
     #[Route('/api/rooms/{id}', name:'room', methods: ['GET'])]
     public function getRoom(
         Room $room, 
-        SerializerInterface $serializer): JsonResponse
+        SerializerInterface $serializer
+    ): JsonResponse
     {
         $room_JSON = $serializer->serialize($room, 'json', ['groups' => 'getRoom']);
         return new JsonResponse($room_JSON, Response::HTTP_OK, ['accept'=>'json'], true);

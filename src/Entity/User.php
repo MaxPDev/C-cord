@@ -15,23 +15,27 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom"])]
+    #[Groups(["getRoom","getUsers",'getOneUser'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom"])]
+    #[Groups(["getRoom", "getUsers",'getOneUser'])]
     private ?string $pseudo = null;
 
     #[ORM\Column]
+    #[Groups(["getUsers",'getOneUser'])]
     private ?bool $isAdmin = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(["getUsers",'getOneUser'])]
     private ?string $avatar = null;
 
     #[ORM\ManyToMany(targetEntity: Room::class, mappedBy: 'user')]
+    #[Groups(["getUsers",'getOneUser'])]
     private Collection $room;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Message::class, orphanRemoval: true)]
+    #[Groups(["getUsers",'getOneUser'])]
     private Collection $messages;
 
     public function __construct()
