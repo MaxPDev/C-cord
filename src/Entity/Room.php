@@ -8,27 +8,35 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getRooms","getRoom"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getRooms","getRoom"])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(["getRooms","getRoom"])]
     private ?string $description = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'room')]
+    #[Groups(["getRoom"])]
     private Collection $user;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Message::class, orphanRemoval: true)]
+    #[Groups(["getRoom"])]
     private Collection $messages;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Stream::class, orphanRemoval: true)]
+    #[Groups(["getRoom"])]
     private Collection $streams;
 
     public function __construct()
