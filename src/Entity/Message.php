@@ -14,27 +14,30 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom","getUsers",'getOneUser'])]
+    #[Groups(["getRoom","getUsers",'getOneUser','getMessage'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getOneUser'])]
+    #[Groups(['getOneUser','getMessage'])]
     private ?string $text = null;
 
     #[ORM\Column]
-    #[Groups(['getOneUser'])] //? DateImmutableNormalizer use ?
+    #[Groups(['getOneUser','getMessage'])] //? DateImmutableNormalizer use ?
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getMessage'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getMessage'])]
     private ?Room $room = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getMessage'])]
     private ?Stream $stream = null;
 
     public function __construct()

@@ -15,11 +15,11 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom","getUsers",'getOneUser'])]
+    #[Groups(["getRoom","getUsers",'getOneUser','getMessage'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom", "getUsers",'getOneUser'])]
+    #[Groups(["getRoom", "getUsers",'getOneUser','getMessage'])]
     private ?string $pseudo = null;
 
     #[ORM\Column]

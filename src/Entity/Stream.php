@@ -15,16 +15,18 @@ class Stream
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom"])]
+    #[Groups(["getRoom",'getMessage'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom"])]
+    #[Groups(["getRoom",'getMessage'])]
     private ?string $name = null;
 
+    #[Groups(['getMessage'])]
     #[ORM\Column(length: 255)]
     private ?string $color_bg = null;
 
+    #[Groups(['getMessage'])]
     #[ORM\Column(length: 255)]
     private ?string $color_txt = null;
 
