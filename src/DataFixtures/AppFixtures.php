@@ -75,6 +75,19 @@ class AppFixtures extends Fixture
         $message4->setUser($user1);
         $message4->setRoom($room1);
         $message4->setStream($stream1);
+
+        for($i=0; $i<10; $i++) {
+            $msg = new Message();
+            $msg->setText("Message " . $i );
+            if ($i%2 == 1) 
+                {$msg->setUser($user1);} 
+                else 
+                {$msg->setUser($user2);};
+            $msg->setRoom($room1);
+            $msg->setStream($stream1);
+
+            $manager->persist($msg);
+        }
         
         $manager->persist($room1);
         $manager->persist($room2);
