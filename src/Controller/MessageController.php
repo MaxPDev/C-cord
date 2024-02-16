@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Doctrine\ORM\EntityManagerInterface;
 
 class MessageController extends AbstractController
 {
@@ -34,5 +35,17 @@ class MessageController extends AbstractController
     {
         $message_JSON = $serializer->serialize($message, 'json', ['groups' => 'getMessage']);
         return new JsonResponse($message_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
+    }
+
+    #[Route('/api/messages/{id}', name: 'deleteMessage', methods: ['DELETE'])]
+    public function deleteMessage(
+        Message $message,
+        EntityManagerInterface $em
+    ): JsonResponse
+    {
+        $em->remove($message);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
