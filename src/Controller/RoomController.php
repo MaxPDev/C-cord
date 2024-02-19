@@ -4,16 +4,20 @@ namespace App\Controller;
 
 use App\Entity\Room;
 use App\Repository\RoomRepository;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 use Symfony\Component\HttpFoundation\Response; //? Utile ?
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class RoomController extends AbstractController
 {
-    #[Route('/api/rooms', name: 'rooms', methods: ['GET'])]
+    #[Route('/api/rooms', name: 'ccord_getRooms', methods: ['GET'])]
     public function getRooms(
         RoomRepository $roomRepository,
         SerializerInterface $serializer
@@ -25,7 +29,7 @@ class RoomController extends AbstractController
         return new JsonResponse($rooms_JSON, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/api/rooms/{id}', name:'room', methods: ['GET'])]
+    #[Route('/api/rooms/{id}', name:'ccord_getRoom', methods: ['GET'])]
     public function getRoom(
         Room $room, 
         SerializerInterface $serializer
@@ -33,6 +37,31 @@ class RoomController extends AbstractController
     {
         $room_JSON = $serializer->serialize($room, 'json', ['groups' => 'getRoom']);
         return new JsonResponse($room_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
+    }
+
+    #[Route('/api/rooms', name:'ccord_createRoom', methods: ['POST'])]
+    public function createRoom(
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+        UrlGeneratorInterface $urlGenerator
+    ): JsonResponse
+    {
+        // Création de l'objet et insertion dans la DB
+        $room = $serializer->deserialize($request->getContent(), Room::class,'json');
+        $em->persist($room);
+        $em->flush();
+
+        // Objet sérializé en JSON pour envoyer un retour de ce qui est crée
+        $room_JSON = $serializer->serialize($room, 'json', ['groups'=> 'getRoom']);
+
+        // Applle une route, on utilise de nom de la route de GET Room
+        $location = $urlGenerator->generate(
+            'ccord_getRoom', 
+            ['id' => $room->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return new JsonResponse($room_JSON, Response::HTTP_CREATED, ['location'=> $location], true);
     }
 
     // #[Route('/api/rooms/{id}', name:'room', methods: ['GET'])]

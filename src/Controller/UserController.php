@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Response;
 class UserController extends AbstractController
 {
-    #[Route('/api/users', name: 'users', methods: ['GET'])]
+    #[Route('/api/users', name: 'ccord_getUsers', methods: ['GET'])]
     public function getUsers(
         UserRepository $userRepository,
         SerializerInterface $serializer
@@ -24,7 +24,7 @@ class UserController extends AbstractController
         return new JsonResponse($users_JSON, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/api/users/{id}', name:'user', methods: ['GET'])]
+    #[Route('/api/users/{id}', name:'ccord_getUser', methods: ['GET'])]
     public function getOneUser(
         User $user,
         SerializerInterface $serializer
