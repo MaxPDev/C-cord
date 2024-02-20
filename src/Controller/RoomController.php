@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 use Symfony\Component\HttpFoundation\Response; //? Utile ?
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 class RoomController extends AbstractController
 {
@@ -25,8 +26,16 @@ class RoomController extends AbstractController
     {
         
         $rooms = $roomRepository->findAll();
-        $rooms_JSON = $serializer->serialize($rooms,'json', ['groups' => 'getRooms']);
-        return new JsonResponse($rooms_JSON, Response::HTTP_OK, [], true);
+        $rooms_JSON = $serializer->serialize(
+            $rooms,
+            'json', 
+            ['groups' => 'getRooms']);
+
+        return new JsonResponse(
+            $rooms_JSON, 
+            Response::HTTP_OK, 
+            [], 
+            true);
     }
 
     #[Route('/api/rooms/{id}', name:'ccord_getRoom', methods: ['GET'])]
@@ -76,4 +85,24 @@ class RoomController extends AbstractController
     //     }
     //     return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     // }
+    
+    #[Route('/api/rooms/{id}', name:'ccord_updateRoom', methods: ['PUT'])]
+    public function updateRoom(
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+        Room $currentRoom
+    ): JsonResponse
+    {
+        $updatesRoom = $serializer->deserialize(
+            $request->getContent(), 
+            Room::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentRoom]);
+
+        $em->persist($updatesRoom);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
 }

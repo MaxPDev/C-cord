@@ -30,7 +30,11 @@ class MessageController extends AbstractController
         $messages = $messageRepository->findAll();
         //! Même groupe  que getMessage, mais si route vraiment utilisé, repenser. (Que les ids ?)
         $messages_JSON = $serializer->serialize($messages, 'json', ['groups' => 'getMessage']);
-        return new JsonResponse($messages_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
+        return new JsonResponse(
+            $messages_JSON, 
+            Response::HTTP_OK, 
+            ['accept'=>'json'], 
+            true);
     }
     
     #[Route('/api/messages/{id}', name: 'ccord_getMessage', methods: ['GET'])]
@@ -39,8 +43,16 @@ class MessageController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse
     {
-        $message_JSON = $serializer->serialize($message, 'json', ['groups' => 'getMessage']);
-        return new JsonResponse($message_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
+        $message_JSON = $serializer->serialize(
+            $message, 
+            'json', 
+            ['groups' => 'getMessage']);
+
+        return new JsonResponse(
+            $message_JSON,
+             Response::HTTP_OK, 
+             ['accept'=>'json'], 
+             true);
     }
 
     #[Route('/api/messages', name: 'ccord_createMessage', methods: ['POST'])]
@@ -55,7 +67,10 @@ class MessageController extends AbstractController
     ): JsonResponse
     {
         // Création de l'objet et insertion dans la DB
-        $message = $serializer->deserialize($request->getContent(), Message::class, 'json');
+        $message = $serializer->deserialize(
+            $request->getContent(), 
+            Message::class, 
+            'json');
 
         // On récupère tous les objets sous forme de tableau
         $content = $request->toArray();
@@ -75,7 +90,10 @@ class MessageController extends AbstractController
         $em->flush();
 
         // Objet sérialisé en JSON pour envoyer un retour de ce qui est créé
-        $message_JSON = $serializer->serialize($message, 'json', ['groups'=> 'getMessage']);
+        $message_JSON = $serializer->serialize(
+            $message, 
+            'json', 
+            ['groups'=> 'getMessage']);
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
@@ -83,7 +101,11 @@ class MessageController extends AbstractController
             ['id' => $message->getId()], 
             UrlGeneratorInterface::ABSOLUTE_URL);    
 
-        return new JsonResponse($message_JSON, Response::HTTP_CREATED, ["Location" => $location], true);
+        return new JsonResponse(
+            $message_JSON,
+             Response::HTTP_CREATED, 
+             ["Location" => $location], 
+             true);
     }
 
     //? Route pour modifier le Stream du message et/ou route modifiant le contenu.
