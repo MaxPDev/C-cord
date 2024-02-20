@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 class MessageController extends AbstractController
 {
@@ -83,6 +84,38 @@ class MessageController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL);    
 
         return new JsonResponse($message_JSON, Response::HTTP_CREATED, ["Location" => $location], true);
+    }
+
+    //? Route pour modifier le Stream du message et/ou route modifiant le contenu.
+    //? Ici les deux pourl l'instant :
+    #[Route('/api/messages/{id}', name: 'ccord_updateMessage', methods: ['PUT'])]
+    public function udpateMessage(
+        Request $request,
+        SerializerInterface $serializer,
+        Message $currentMessage,
+        EntityManagerInterface $em,
+        StreamRepository $streamRepository
+    ): JsonResponse
+    {
+        $updatedMessage = $serializer->deserialize(
+            $request->getContent(),
+            Message::class,
+            'json',
+            //? On "repopulate" le message qui arrive de la requete
+            //? Comment cette variable est utilisée ensuite ??
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentMessage]);
+
+        $content = $request->toArray();
+        
+        // Seul le Stream d'un message doit être modifiable, on ne gère que lui
+        $idStream = $content['idStream'] ?? -1;
+        $updatedMessage->setStream($streamRepository->find($idStream));
+
+        // On persiste $updateMessage pas $currentMessage pour persister uniquement les modifications
+        $em->persist($updatedMessage);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/api/messages/{id}', name: 'ccord_deleteMessage', methods: ['DELETE'])]

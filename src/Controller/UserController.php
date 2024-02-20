@@ -34,4 +34,6 @@ class UserController extends AbstractController
 
         return new JsonResponse($user_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
     }
+
+    //? Lorsque createUser : route "LinkUserAndRoom ?", ou et création d'une room en même temps mais non
 }
