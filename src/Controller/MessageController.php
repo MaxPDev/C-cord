@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Message;
 use App\Repository\MessageRepository;
+use App\Repository\RoomRepository;
+use App\Repository\StreamRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -44,11 +47,29 @@ class MessageController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        UserRepository $userRepository,
+        StreamRepository $streamRepository,
+        RoomRepository $roomRepository
     ): JsonResponse
     {
         // Création de l'objet et insertion dans la DB
         $message = $serializer->deserialize($request->getContent(), Message::class, 'json');
+
+        // On récupère tous les objets sous forme de tableau
+        $content = $request->toArray();
+        
+        // Récupération des idRoom, idStream et idUser
+        //! Gérer si null, ou si non existant
+        $idUser = $content['idUser'] ?? -1;
+        $idRoom = $content['idRoom'] ?? -1;
+        $idStream = $content['idStream'] ?? -1;
+        
+        // Assignation des Steam, Room et User à l'objet message, null si non trouvé
+        $message->setUser($userRepository->find($idUser));
+        $message->setRoom($roomRepository->find($idRoom));
+        $message->setStream($streamRepository->find($idStream));
+     
         $em->persist($message);
         $em->flush();
 
