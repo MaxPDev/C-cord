@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Message;
 use App\Entity\Room;
 use App\Entity\Stream;
+use App\Repository\MessageRepository;
 use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -75,48 +78,6 @@ class RoomController extends AbstractController
         return new JsonResponse($room_JSON, Response::HTTP_CREATED, ['location'=> $location], true);
     }
 
-    #[Route('/api/rooms/{id}/stream', name:'ccord_createStreamByRoom', methods: ['POST'])]
-    public function createStreamByRoom(
-        int $id, //? Ou Room $room ? Tester les deux
-        // Room $room,
-        Request $request,
-        SerializerInterface $serializer,
-        EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator,
-        RoomRepository $roomRepository
-    ): JsonResponse
-    {
-        $stream = $serializer->deserialize(
-            $request->getContent(),
-            Stream::class,
-            'json'
-        );
-
-        //* On définit ici la room d'où le stream est crée, ce n'est pas le client qui décide
-        //todo: faire pareil pour messages
-        $stream->setRoom($roomRepository->find($id));
-
-        //* Deux options équivalentes
-        // print_r($id);
-        // print_r($room->getId());
-
-        $em->persist($stream);
-        $em->flush();
-
-        $stream_JSON = $serializer->serialize($stream,'json', ['groups' => 'getStreams']);
-
-        $location = $urlGenerator->generate(
-            'ccord_getOneStream',
-            ['id'=> $stream->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL);
-
-        return new JsonResponse(
-            $stream_JSON,
-            Response::HTTP_CREATED,
-            ['Location'=> $location],
-            true);
-
-    }
 
     // #[Route('/api/rooms/{id}', name:'room', methods: ['GET'])]
     // public function getRoom(int $id, 

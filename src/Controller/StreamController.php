@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Stream;
 use App\Repository\MessageRepository;
+use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -61,6 +63,71 @@ class StreamController extends AbstractController
         
     }
 
+    #[Route(path:'api/rooms/{id}/streams', name:'ccord_getStreamsByRoom', methods: ['GET'])]
+    public function getStreamsByRoom(
+        int $id,
+        SerializerInterface $serializer,
+        StreamRepository $streamRepository
+    ): JsonResponse
+    {
+        $streamsByRoom = $streamRepository->findByRoom($id);
+
+        $streams_JSON = $serializer->serialize(
+            $streamsByRoom,
+            "json",
+            ['groups' => 'getStreams']);
+
+        return new JsonResponse(
+            $streams_JSON, 
+            Response::HTTP_OK, 
+            [], 
+            true);
+    }
+        //? Dans StreamController ?
+    #[Route('/api/rooms/{id}/stream', name:'ccord_createStreamByRoom', methods: ['POST'])]
+    public function createStreamByRoom(
+        int $id, //? Ou Room $room ? Tester les deux
+        // Room $room,
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+        UrlGeneratorInterface $urlGenerator,
+        RoomRepository $roomRepository
+    ): JsonResponse
+    {
+        $stream = $serializer->deserialize(
+            $request->getContent(),
+            Stream::class,
+            'json'
+        );
+
+        //* On définit ici la room d'où le stream est crée, ce n'est pas le client qui décide
+        //todo: faire pareil pour messages
+        $stream->setRoom($roomRepository->find($id));
+
+        //* Deux options équivalentes
+        // print_r($id);
+        // print_r($room->getId());
+
+        $em->persist($stream);
+        $em->flush();
+
+        $stream_JSON = $serializer->serialize($stream,'json', ['groups' => 'getStreams']);
+
+        $location = $urlGenerator->generate(
+            'ccord_getOneStream',
+            ['id'=> $stream->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return new JsonResponse(
+            $stream_JSON,
+            Response::HTTP_CREATED,
+            ['Location'=> $location],
+            true);
+
+    }
+
+
     #[Route(path:'/api/streams/{id}', name:'ccord_updateStream', methods: ['PUT'])]
     public function updateStream(
         Request $request,
@@ -81,23 +148,4 @@ class StreamController extends AbstractController
         return new JsonResponse($currentStream, Response::HTTP_NO_CONTENT);
     }
 
-    #[Route(path:"/api/streams/{id}/messages", name:"ccord_getMessageByStream", methods: ["GET"])]
-    public function getMessagesByStream(
-        Stream $stream,
-        SerializerInterface $serializer,
-        MessageRepository $messageRepository
-        ): JsonResponse
-    {
-        $messages = $messageRepository->findByStream($stream);
-        $messages_JSON = $serializer->serialize(
-            $messages,
-            "json",
-            ['groups' => 'getMessage' ]);
-
-        return new JsonResponse(
-            $messages_JSON,
-            Response::HTTP_OK,
-            [],
-            true);
-    }
 }

@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Message;
+use App\Entity\Room;
+use App\Entity\Stream;
 use App\Repository\MessageRepository;
 use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
@@ -53,6 +55,46 @@ class MessageController extends AbstractController
              Response::HTTP_OK, 
              ['accept'=>'json'], 
              true);
+    }
+
+    #[Route(path:"/api/streams/{id}/messages", name:"ccord_getMessageByStream", methods: ["GET"])]
+    public function getMessagesByStream(
+        Stream $stream,
+        SerializerInterface $serializer,
+        MessageRepository $messageRepository
+        ): JsonResponse
+    {
+        $messages = $messageRepository->findByStream($stream);
+        $messages_JSON = $serializer->serialize(
+            $messages,
+            "json",
+            ['groups' => 'getMessage' ]);
+
+        return new JsonResponse(
+            $messages_JSON,
+            Response::HTTP_OK,
+            [],
+            true);
+    }
+
+    #[Route(path:"/api/rooms/{id}/messages", name:"ccord_getMessageByStream", methods: ["GET"])]
+    public function getMessagesByRoom(
+        Room $room,
+        SerializerInterface $serializer,
+        MessageRepository $messageRepository
+        ): JsonResponse
+    {
+        $messages = $messageRepository->findByRoom($room);
+        $messages_JSON = $serializer->serialize(
+            $messages,
+            "json",
+            ['groups' => 'getMessage' ]);
+
+        return new JsonResponse(
+            $messages_JSON,
+            Response::HTTP_OK,
+            [],
+            true);
     }
 
     #[Route('/api/messages', name: 'ccord_createMessage', methods: ['POST'])]
@@ -106,6 +148,61 @@ class MessageController extends AbstractController
              Response::HTTP_CREATED, 
              ["Location" => $location], 
              true);
+    }
+
+//? Dans MessageController ??
+    //! Attention, un user pas présent dans la room ne doit pas pouvoir publier
+    //todo: faire ce contrôle
+    #[Route('/api/rooms/{id}/message', name:'ccord_createMessageByRoom', methods: ['POST'])]
+    public function createMessageByRoom(
+        int $id,
+        Request $request,
+        SerializerInterface $serializer,
+        RoomRepository $roomRepository,
+        UserRepository $userRepository,
+        StreamRepository $streamRepository,
+        EntityManagerInterface $em,
+        UrlGeneratorInterface $urlGenerator
+    ): JsonResponse
+    {
+        $message = $serializer->deserialize(
+            $request->getContent(),
+            Message::class,
+            'json'
+        );
+
+        $message->setRoom($roomRepository->find($id));
+
+        $content = $request->toArray();
+
+        $idUser = $content['idUser'] ?? -1;
+        $idStream = $content['idStream'] ?? -1;        
+
+        //todo fait automatique après dev de l'api user, uuid etc...
+        $message->setUser($userRepository->find($idUser));
+        $message->setStream($streamRepository->find($idStream));
+
+        $em->persist($message);
+        $em->flush();
+
+        // Objet sérialisé en JSON pour envoyer un retour de ce qui est créé
+        $message_JSON = $serializer->serialize(
+            $message, 
+            'json', 
+            ['groups'=> 'getMessage']);
+
+        // Appelle une route,on utilise le nom de la route de GET Message
+        $location = $urlGenerator->generate(
+            'ccord_getMessage', 
+            ['id' => $message->getId()], 
+            UrlGeneratorInterface::ABSOLUTE_URL);    
+
+        return new JsonResponse(
+            $message_JSON,
+            Response::HTTP_CREATED, 
+            ["Location" => $location], 
+            true);
+
     }
 
     //? Route pour modifier le Stream du message et/ou route modifiant le contenu.
