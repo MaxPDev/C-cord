@@ -14,11 +14,11 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom","getUsers",'getOneUser','getMessage'])]
+    #[Groups(["getRoom","getUsers",'getOneUser','getMessage','getStream'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getOneUser','getMessage'])]
+    #[Groups(['getOneUser','getMessage','getStream'])]
     private ?string $text = null;
 
     #[ORM\Column]

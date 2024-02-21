@@ -16,7 +16,7 @@ class Room
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRooms","getRoom","getUsers", "getOneUser",'getMessage','getStreams'])]
+    #[Groups(["getRooms","getRoom","getUsers", "getOneUser",'getMessage','getStreams','getStream'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
