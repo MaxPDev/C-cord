@@ -106,5 +106,9 @@ class UserController extends AbstractController
         
         }
 
-        // user to room
+        //? user to room, ou faire dans Room ? Essayons les deux
+        //! Doublon avec room/{id}/user PUT, choisir leur utilité ou la plus pertinente
+
+        //? ici user enter room, et dans room, room/id/user(existe déjà sousen tendu, idem avec stream)
+        // peutêtre faire une root getRoom pour info, et Room/id/user pour obtenir user en détail, avec avatar et isamdin
 }

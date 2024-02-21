@@ -15,19 +15,19 @@ class Stream
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom",'getMessage'])]
+    #[Groups(["getRoom",'getMessage', 'getStreams'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom",'getMessage'])]
+    #[Groups(["getRoom",'getMessage','getStreams'])]
     private ?string $name = null;
 
-    #[Groups(['getMessage'])]
+    #[Groups(['getMessage','getStreams'])]
     #[ORM\Column(length: 255)]
     private ?string $color_bg = null;
 
-    #[Groups(['getMessage'])]
     #[ORM\Column(length: 255)]
+    #[Groups(['getMessage','getStreams'])]
     private ?string $color_txt = null;
 
     #[ORM\OneToMany(mappedBy: 'stream', targetEntity: Message::class, orphanRemoval: true)]
@@ -35,6 +35,7 @@ class Stream
 
     #[ORM\ManyToOne(inversedBy: 'streams')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getStreams'])]
     private ?Room $room = null;
 
     public function __construct()
