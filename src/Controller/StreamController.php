@@ -148,4 +148,15 @@ class StreamController extends AbstractController
         return new JsonResponse($currentStream, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route(path:'/api/streams/{id}', name:'ccord_deleteStream', methods: ['DELETE'])]
+    public function deleteStream(
+        Stream $stream,
+        EntityManagerInterface $em,
+    ): JsonResponse
+    {
+        $em->remove($stream);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
 }
