@@ -2,9 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Room;
 use App\Entity\Stream;
-use App\Repository\MessageRepository;
-use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -83,16 +82,15 @@ class StreamController extends AbstractController
             [], 
             true);
     }
-        //? Dans StreamController ?
+  
     #[Route('/api/rooms/{id}/stream', name:'ccord_createStreamByRoom', methods: ['POST'])]
     public function createStreamByRoom(
-        int $id, //? Ou Room $room ? Tester les deux
-        // Room $room,
+        // int $id, //? Ou Room $room ? Tester les deux
+        Room $room,
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator,
-        RoomRepository $roomRepository
+        UrlGeneratorInterface $urlGenerator
     ): JsonResponse
     {
         $stream = $serializer->deserialize(
@@ -103,7 +101,7 @@ class StreamController extends AbstractController
 
         //* On définit ici la room d'où le stream est crée, ce n'est pas le client qui décide
         //todo: faire pareil pour messages
-        $stream->setRoom($roomRepository->find($id));
+        $stream->setRoom($room);
 
         //* Deux options équivalentes
         // print_r($id);
@@ -151,7 +149,7 @@ class StreamController extends AbstractController
     #[Route(path:'/api/streams/{id}', name:'ccord_deleteStream', methods: ['DELETE'])]
     public function deleteStream(
         Stream $stream,
-        EntityManagerInterface $em,
+        EntityManagerInterface $em
     ): JsonResponse
     {
         $em->remove($stream);

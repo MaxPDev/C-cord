@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Entity\Room;
 use App\Entity\Stream;
+use App\Entity\User;
 use App\Repository\MessageRepository;
 use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
@@ -23,7 +24,7 @@ class MessageController extends AbstractController
 {
 
     //! Route uniquement pour récupérer ID facilement pour dev. Inutile dans l'application ?
-    #[Route('/api/messages', name: 'ccord_getMessages', methods: ['GET'])]
+    #[Route(path:'/api/messages', name: 'ccord_getMessages', methods: ['GET'])]
     public function getMessages(
         MessageRepository $messageRepository,
         SerializerInterface $serializer
@@ -39,7 +40,7 @@ class MessageController extends AbstractController
             true);
     }
     
-    #[Route('/api/messages/{id}', name: 'ccord_getMessage', methods: ['GET'])]
+    #[Route(path:'/api/messages/{id}', name: 'ccord_getMessage', methods: ['GET'])]
     public function getOneMessage(
         Message $message,
         SerializerInterface $serializer
@@ -77,7 +78,8 @@ class MessageController extends AbstractController
             true);
     }
 
-    #[Route(path:"/api/rooms/{id}/messages", name:"ccord_getMessageByStream", methods: ["GET"])]
+    // #[Route(path:"/api/rooms/{id}/messages", name:"ccord_getMessageByStream", methods: ["GET"])]
+    #[Route(path:"/api/rooms/{id}/messages", name:"ccord_getMessageByRoom", methods: ["GET"])]
     public function getMessagesByRoom(
         Room $room,
         SerializerInterface $serializer,
@@ -85,6 +87,26 @@ class MessageController extends AbstractController
         ): JsonResponse
     {
         $messages = $messageRepository->findByRoom($room);
+        $messages_JSON = $serializer->serialize(
+            $messages,
+            "json",
+            ['groups' => 'getMessage' ]);
+
+        return new JsonResponse(
+            $messages_JSON,
+            Response::HTTP_OK,
+            [],
+            true);
+    }
+
+    #[Route(path:"/api/users/{id}/messages", name:"ccord_getMessagesByUser", methods: ["GET"])]
+    public function getMessagesByUser(
+        User $user,
+        SerializerInterface $serializer,
+        MessageRepository $messageRepository
+        ): JsonResponse
+    {
+        $messages = $messageRepository->findByUser($user);
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
@@ -155,10 +177,9 @@ class MessageController extends AbstractController
     //! ça ou createMessageByStream, il faut choisir
     #[Route('/api/rooms/{id}/message', name:'ccord_createMessageByRoom', methods: ['POST'])]
     public function createMessageByRoom(
-        int $id,
+        Room $room,
         Request $request,
         SerializerInterface $serializer,
-        RoomRepository $roomRepository,
         UserRepository $userRepository,
         StreamRepository $streamRepository,
         EntityManagerInterface $em,
@@ -171,7 +192,7 @@ class MessageController extends AbstractController
             'json'
         );
 
-        $message->setRoom($roomRepository->find($id));
+        $message->setRoom($room);
 
         $content = $request->toArray();
 
@@ -207,10 +228,9 @@ class MessageController extends AbstractController
 
     #[Route(path:"/api/streams/{id}/message", name:"ccord_createMessageByStream", methods: ["POST"])]
     public function createMessageByStream(
-        int $id,
+        Stream $stream,
         Request $request,
         SerializerInterface $serializer,
-        StreamRepository $streamRepository,
         UserRepository $userRepository,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator
@@ -224,11 +244,11 @@ class MessageController extends AbstractController
         );
 
         // Attribution du Stream depuisde l'id de la route 
-        $newMessage->setStream($streamRepository->find($id));
+        $newMessage->setStream($stream);
 
         // Attribution de la room directement depuis la Stream (et non des données reçu)
         //todo créer un find depuis le streamRepository plutôt qu'une requette ! ?
-        $newMessage->setRoom($em->getRepository(Stream::class)->find($id)->getRoom());
+        $newMessage->setRoom($stream->getRoom());
 
         // Récupération du contenu JSON de la rquête en tableau
         $content = $request->toArray();

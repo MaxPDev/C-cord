@@ -155,6 +155,18 @@ class UserController extends AbstractController
         
         }
 
+        #[Route(path:'/api/users/{id}', name:'ccord_deleteUser', methods: ['DELETE'])]
+        public function deleteUser(
+            User $user,
+            EntityManagerInterface $em
+        )
+        {
+            $em->remove($user);
+            $em->flush();
+
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        }
+
         //? user to room, ou faire dans Room ? Essayons les deux
         //! Doublon avec room/{id}/user PUT, choisir leur utilité ou la plus pertinente
 
