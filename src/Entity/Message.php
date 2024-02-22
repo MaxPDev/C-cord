@@ -14,15 +14,15 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom","getUsers",'getOneUser','getMessage','getStream'])]
+    #[Groups(["getRoom",'getMessage','getStream'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getOneUser','getMessage','getStream'])]
+    #[Groups(['getMessage','getStream'])]
     private ?string $text = null;
 
     #[ORM\Column]
-    #[Groups(['getOneUser','getMessage'])] //? DateImmutableNormalizer use ?
+    #[Groups(['getMessage'])] //? DateImmutableNormalizer use ?
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]

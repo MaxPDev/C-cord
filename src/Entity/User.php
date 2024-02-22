@@ -31,11 +31,10 @@ class User
     private ?string $avatar = null;
 
     #[ORM\ManyToMany(targetEntity: Room::class, mappedBy: 'user')]
-    #[Groups(["getUsers",'getOneUser'])]
+    #[Groups(["getUsers",])]
     private Collection $room;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Message::class, orphanRemoval: true)]
-    #[Groups(["getUsers",'getOneUser'])]
     private Collection $messages;
 
     public function __construct()

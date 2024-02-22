@@ -36,13 +36,36 @@ class UserController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse
     {
-        $user_JSON = $serializer->serialize($user,'json', ['groups' => 'getOneUser']);
+        $user_JSON = $serializer->serialize(
+            $user,
+            'json', 
+            ['groups' => 'getOneUser']);
 
-        return new JsonResponse($user_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
+        return new JsonResponse(
+            $user_JSON, 
+            Response::HTTP_OK, 
+            ['accept'=>'json'], 
+            true);
     }
 
-    //TODO
-    // #[Route("/api/users/{id}/rooms", name:"ccord_getRoomsByUser", methods: ["GET"])]
+
+    #[Route("/api/users/{id}/rooms", name:"ccord_getRoomsByUser", methods: ["GET"])]
+    public function getRoomsByUser(
+        User $user,
+        SerializerInterface $serializer
+    ): JsonResponse
+    {
+        $room_JSON = $serializer->serialize(
+            $user->getRoom(),
+            "json", 
+            ['groups' => 'getRooms']); //? créer un groupe getRoomsByUser avec l'lid USer ?
+
+        return new JsonResponse(
+            $room_JSON,
+            Response::HTTP_OK,
+            ['accept'=>'json'],
+            true);
+    }
 
     #[Route('/api/users', name:'ccord_createUser', methods: ['POST'])]
     public function createUser(
