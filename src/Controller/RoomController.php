@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Entity\Room;
 use App\Entity\Stream;
+use App\Entity\User;
 use App\Repository\MessageRepository;
 use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
@@ -77,6 +78,7 @@ class RoomController extends AbstractController
 
         return new JsonResponse($room_JSON, Response::HTTP_CREATED, ['location'=> $location], true);
     }
+
 
 
     // #[Route('/api/rooms/{id}', name:'room', methods: ['GET'])]

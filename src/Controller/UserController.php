@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Room;
 Use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,6 +40,9 @@ class UserController extends AbstractController
 
         return new JsonResponse($user_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
     }
+
+    //TODO
+    // #[Route("/api/users/{id}/rooms", name:"ccord_getRoomsByUser", methods: ["GET"])]
 
     #[Route('/api/users', name:'ccord_createUser', methods: ['POST'])]
     public function createUser(
@@ -84,6 +88,45 @@ class UserController extends AbstractController
                 true);
             
         }
+
+    //! Sûrement à repenser / réécrire
+    //TODO: room/id/user POST lorsqu'un user rentre dans une room : Faire avec le bon système d'authentification de user
+    #[Route("/api/rooms/{id}/user", name:"ccord_userJoinRoom", methods: ["POST"])]
+    public function userToRoom(
+        Request $request,
+        Room $room,
+        UserRepository $userRepository,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+    ):JsonResponse
+    {
+        // Récupération de l'id User
+        $content = $request->toArray();
+        $idUser = $content['idUser'];
+
+        // Ajout de l'utilisateur dansl room
+        $room->addUser($userRepository->find($idUser));
+
+        // Peristance de la donnée et écriture dans la BD
+        $em->persist($room);
+        $em->flush();
+
+        // Création de l'objet utilisateur
+        $user = $em->getRepository(User::class)->find($idUser);
+
+        // Sérialization de l'objet en JSON, de des Rooms de l'utilisateur
+        $rommsByUser_JSON = $serializer->serialize(
+            $user->getRoom(),
+            'json',
+            ['groups'=>'getRooms']);
+
+        return new JsonResponse(
+            $rommsByUser_JSON,
+            Response::HTTP_CREATED,
+            [],
+            true
+        );
+    }
 
         #[Route("/api/users/{id}", name:"ccord_updateUser", methods: ["PUT"])]
         public function updateUser(
