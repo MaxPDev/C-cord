@@ -150,9 +150,9 @@ class MessageController extends AbstractController
              true);
     }
 
-//? Dans MessageController ??
     //! Attention, un user pas présent dans la room ne doit pas pouvoir publier
     //todo: faire ce contrôle
+    //! ça ou createMessageByStream, il faut choisir
     #[Route('/api/rooms/{id}/message', name:'ccord_createMessageByRoom', methods: ['POST'])]
     public function createMessageByRoom(
         int $id,
@@ -203,6 +203,64 @@ class MessageController extends AbstractController
             ["Location" => $location], 
             true);
 
+    }
+
+    #[Route(path:"/api/streams/{id}/message", name:"ccord_createMessageByStream", methods: ["POST"])]
+    public function createMessageByStream(
+        int $id,
+        Request $request,
+        SerializerInterface $serializer,
+        StreamRepository $streamRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+        UrlGeneratorInterface $urlGenerator
+    ): JsonResponse
+    {
+        // Création de l'objet message depuis les données en JSON reçues
+        $newMessage = $serializer->deserialize(
+            $request->getContent(),
+            Message::class,
+            "json"
+        );
+
+        // Attribution du Stream depuisde l'id de la route 
+        $newMessage->setStream($streamRepository->find($id));
+
+        // Attribution de la room directement depuis la Stream (et non des données reçu)
+        //todo créer un find depuis le streamRepository plutôt qu'une requette ! ?
+        $newMessage->setRoom($em->getRepository(Stream::class)->find($id)->getRoom());
+
+        // Récupération du contenu JSON de la rquête en tableau
+        $content = $request->toArray();
+
+        // Récupération de l'idUser depuis l'objet fait depuis les données
+        $idUser = $content['idUser'] ?? -1;
+
+        // Attribution de l'utilisation depuis l'id reçu des données
+        $newMessage->setUser($userRepository->find($idUser));
+
+        // Peristance des données et écriture dans la BD
+        $em->persist($newMessage);
+        $em->flush();
+
+
+        // Objet sérialisé en JSON pour envoyer un retour de ce qui est créé
+        $message_JSON = $serializer->serialize(
+            $newMessage, 
+            'json', 
+            ['groups'=> 'getMessage']);
+
+        // Appelle une route,on utilise le nom de la route de GET Message
+        $location = $urlGenerator->generate(
+            'ccord_getMessage', 
+            ['id' => $newMessage->getId()], 
+            UrlGeneratorInterface::ABSOLUTE_URL);  
+
+        return new JsonResponse(
+            $message_JSON,
+            Response::HTTP_CREATED, 
+            ["Location" => $location], 
+            true);
     }
 
     //? Route pour modifier le Stream du message et/ou route modifiant le contenu.

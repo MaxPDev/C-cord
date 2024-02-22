@@ -54,6 +54,25 @@ class RoomController extends AbstractController
         return new JsonResponse($room_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
     }
 
+
+    #[Route("/api/users/{id}/rooms", name:"ccord_getRoomsByUser", methods: ["GET"])]
+    public function getRoomsByUser(
+        User $user,
+        SerializerInterface $serializer
+    ): JsonResponse
+    {
+        $room_JSON = $serializer->serialize(
+            $user->getRoom(),
+            "json", 
+            ['groups' => 'getRooms']); //? créer un groupe getRoomsByUser avec l'lid USer ?
+
+        return new JsonResponse(
+            $room_JSON,
+            Response::HTTP_OK,
+            ['accept'=>'json'],
+            true);
+    }
+
     #[Route('/api/rooms', name:'ccord_createRoom', methods: ['POST'])]
     public function createRoom(
         Request $request,

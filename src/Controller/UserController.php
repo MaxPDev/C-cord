@@ -49,24 +49,6 @@ class UserController extends AbstractController
     }
 
 
-    #[Route("/api/users/{id}/rooms", name:"ccord_getRoomsByUser", methods: ["GET"])]
-    public function getRoomsByUser(
-        User $user,
-        SerializerInterface $serializer
-    ): JsonResponse
-    {
-        $room_JSON = $serializer->serialize(
-            $user->getRoom(),
-            "json", 
-            ['groups' => 'getRooms']); //? créer un groupe getRoomsByUser avec l'lid USer ?
-
-        return new JsonResponse(
-            $room_JSON,
-            Response::HTTP_OK,
-            ['accept'=>'json'],
-            true);
-    }
-
     #[Route('/api/users', name:'ccord_createUser', methods: ['POST'])]
     public function createUser(
         Request $request,
@@ -135,6 +117,7 @@ class UserController extends AbstractController
         $em->flush();
 
         // Création de l'objet utilisateur
+        //todo créer un find depuis le userRepository plutôt qu'une reqûte ! ?
         $user = $em->getRepository(User::class)->find($idUser);
 
         // Sérialization de l'objet en JSON, de des Rooms de l'utilisateur
