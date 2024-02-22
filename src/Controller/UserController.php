@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class UserController extends AbstractController
 {
-    #[Route('/api/users', name: 'ccord_getUsers', methods: ['GET'])]
+    #[Route(path:'/api/users', name: 'ccord_getUsers', methods: ['GET'])]
     public function getUsers(
         UserRepository $userRepository,
         SerializerInterface $serializer
@@ -30,7 +30,7 @@ class UserController extends AbstractController
         return new JsonResponse($users_JSON, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/api/users/{id}', name:'ccord_getUser', methods: ['GET'])]
+    #[Route(path:'/api/users/{id}', name:'ccord_getUser', methods: ['GET'])]
     public function getOneUser(
         User $user,
         SerializerInterface $serializer
@@ -48,8 +48,26 @@ class UserController extends AbstractController
             true);
     }
 
+    #[Route(path:"/api/rooms/{id}/users", name:"ccord_getUsersByRoom", methods: ["GET"])]
+    public function getUsersByRoom(
+        Room $room,
+        SerializerInterface $serializer,
+    ): JsonResponse
+    {
+        $roomsByUser_JSON = $serializer->serialize(
+            $room->getUser(),
+            'json',
+            ['groups'=>'getUsers']);
 
-    #[Route('/api/users', name:'ccord_createUser', methods: ['POST'])]
+        return new JsonResponse(
+            $roomsByUser_JSON,
+            Response::HTTP_OK,
+            [],
+            true);
+        
+    }
+
+    #[Route(path:'/api/users', name:'ccord_createUser', methods: ['POST'])]
     public function createUser(
         Request $request,
         SerializerInterface $serializer,
@@ -93,6 +111,7 @@ class UserController extends AbstractController
                 true);
             
         }
+    
 
     //! Sûrement à repenser / réécrire
     //TODO: room/id/user POST lorsqu'un user rentre dans une room : Faire avec le bon système d'authentification de user
