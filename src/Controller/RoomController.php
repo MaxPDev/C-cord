@@ -133,5 +133,17 @@ class RoomController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/api/rooms/{id}', name:'ccord_deleteRoom', methods:['DELETE'])]
+    public function deleteRoom(
+        Room $room,
+        EntityManagerInterface $em
+    ): JsonResponse
+    {
+        $em->remove($room);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
 
 }
