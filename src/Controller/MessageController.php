@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class MessageController extends AbstractController
 {
@@ -127,7 +128,8 @@ class MessageController extends AbstractController
         UrlGeneratorInterface $urlGenerator,
         UserRepository $userRepository,
         StreamRepository $streamRepository,
-        RoomRepository $roomRepository
+        RoomRepository $roomRepository,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         // Création de l'objet et insertion dans la DB
@@ -136,6 +138,16 @@ class MessageController extends AbstractController
             Message::class, 
             'json');
 
+        // Validation du format des données
+        $errors = $validator->validate($message);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
+        
         // On récupère tous les objets sous forme de tableau
         $content = $request->toArray();
         
@@ -149,6 +161,7 @@ class MessageController extends AbstractController
         $message->setUser($userRepository->find($idUser));
         $message->setRoom($roomRepository->find($idRoom));
         $message->setStream($streamRepository->find($idStream));
+
      
         $em->persist($message);
         $em->flush();
@@ -183,7 +196,8 @@ class MessageController extends AbstractController
         UserRepository $userRepository,
         StreamRepository $streamRepository,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         $message = $serializer->deserialize(
@@ -191,7 +205,17 @@ class MessageController extends AbstractController
             Message::class,
             'json'
         );
-
+        
+        // Validation du format des données
+        $errors = $validator->validate($message);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
+        
         $message->setRoom($room);
 
         $content = $request->toArray();
@@ -233,7 +257,8 @@ class MessageController extends AbstractController
         SerializerInterface $serializer,
         UserRepository $userRepository,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         // Création de l'objet message depuis les données en JSON reçues
@@ -242,6 +267,16 @@ class MessageController extends AbstractController
             Message::class,
             "json"
         );
+
+        // Validation du format des données
+        $errors = $validator->validate($newMessage);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
 
         // Attribution du Stream depuisde l'id de la route 
         $newMessage->setStream($stream);
@@ -291,7 +326,8 @@ class MessageController extends AbstractController
         SerializerInterface $serializer,
         Message $currentMessage,
         EntityManagerInterface $em,
-        StreamRepository $streamRepository
+        StreamRepository $streamRepository,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         $updatedMessage = $serializer->deserialize(
@@ -301,6 +337,16 @@ class MessageController extends AbstractController
             //? On "repopulate" le message qui arrive de la requete
             //? Comment cette variable est utilisée ensuite ??
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentMessage]);
+
+        // Validation du format des données
+        $errors = $validator->validate($updatedMessage);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
 
         $content = $request->toArray();
         

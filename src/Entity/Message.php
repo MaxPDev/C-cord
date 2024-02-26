@@ -25,8 +25,9 @@ class Message
 
     #[ORM\Column]
     #[Groups(['getMessage'])] //? DateImmutableNormalizer use ?
-    #[Assert\NotNull(message:'Une date doit être fournie pour ce message')]
-    #[Assert\DateTime(message:'Une date doit être fourni pour ce message')]
+    //? Demande une string si ces Assert sont actifs
+    // #[Assert\NotNull(message:'Une date doit être fournie pour ce message')]
+    // #[Assert\DateTime(message:'Une date doit être fourni pour ce message')]
     private ?\DateTimeImmutable $created_at = null;
 
     //! $updated_at !!
