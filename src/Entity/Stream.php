@@ -31,14 +31,14 @@ class Stream
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message:'Couleur du fond requis. Format : Hexadécimal')]
     #[Assert\CssColor(formats: Assert\CssColor::HEX_LONG,
-                      messages: 'La coulour doit être au format hexadécimal de 6 carachtères')]
+                      message: 'La couleur doit être au format hexadécimal de 6 charactères e.g. #2F2F2F')]
     private ?string $color_bg = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['getMessage','getStreams','getStream'])]
     #[Assert\NotBlank(message:'Couleur du texte requis. Format : Hexadécimal')]
     #[Assert\CssColor(formats: Assert\CssColor::HEX_LONG,
-                      messages: 'La coulour doit être au format hexadécimal de 6 carachtères')]
+                      message: 'La couleur doit être au format hexadécimal de 6 charactères e.g. #2F2F2F')]
     private ?string $color_txt = null;
 
     #[ORM\OneToMany(mappedBy: 'stream', targetEntity: Message::class, orphanRemoval: true)]

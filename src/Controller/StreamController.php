@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StreamController extends AbstractController
 {
@@ -90,7 +91,8 @@ class StreamController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         $stream = $serializer->deserialize(
@@ -98,6 +100,16 @@ class StreamController extends AbstractController
             Stream::class,
             'json'
         );
+
+        // Validation du format des données
+        $errors = $validator->validate($stream);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
 
         //* On définit ici la room d'où le stream est crée, ce n'est pas le client qui décide
         //todo: faire pareil pour messages
@@ -131,7 +143,8 @@ class StreamController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         Stream $currentStream,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         $updatedStream = $serializer->deserialize(
@@ -139,6 +152,16 @@ class StreamController extends AbstractController
             Stream::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentStream]);
+
+        // Validation du format des données
+        $errors = $validator->validate($updatedStream);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
 
         $em->persist($updatedStream);
         $em->flush();
