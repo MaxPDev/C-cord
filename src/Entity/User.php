@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -20,12 +21,18 @@ class User
 
     #[ORM\Column(length: 255)]
     #[Groups(["getRoom", "getUsers",'getOneUser','getMessage'])]
+    #[Assert\NotBlank(message: "Pseudo requis")]
+    #[Assert\Length(min:3, max: 255, 
+      minMessage:"Nom de la room : {{ limit }} caractères minimum",
+      maxMessage:"Nom de la room : {{ limit }} caractères maximum")]
     private ?string $pseudo = null;
 
     #[ORM\Column]
     #[Groups(["getUsers",'getOneUser'])]
+    #//? Assert ??
     private ?bool $isAdmin = null;
 
+    //? Later : fileType ? Image ?
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(["getUsers",'getOneUser'])]
     private ?string $avatar = null;

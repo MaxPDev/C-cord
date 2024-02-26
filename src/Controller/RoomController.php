@@ -87,7 +87,7 @@ class RoomController extends AbstractController
         // Création de l'objet
         $room = $serializer->deserialize($request->getContent(), Room::class,'json');
         
-        // Vérification des erreurs
+        // Validation du format des données
         $errors = $validator->validate($room);
 
         if ($errors->count() > 0) {

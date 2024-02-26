@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StreamRepository::class)]
 class Stream
@@ -20,14 +21,24 @@ class Stream
 
     #[ORM\Column(length: 255)]
     #[Groups(["getRoom",'getMessage','getStreams','getStream'])]
+    #[Assert\NotBlank(message: "Nom du nouveau stream requis")]
+    #[Assert\Length(min:1, max: 255, 
+      minMessage:"Nom de la room : {{ limit }} caractères minimum",
+      maxMessage:"Nom de la room : {{ limit }} caractères maximum")]
     private ?string $name = null;
 
     #[Groups(['getMessage','getStreams','getStream'])]
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message:'Couleur du fond requis. Format : Hexadécimal')]
+    #[Assert\CssColor(formats: Assert\CssColor::HEX_LONG,
+                      messages: 'La coulour doit être au format hexadécimal de 6 carachtères')]
     private ?string $color_bg = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['getMessage','getStreams','getStream'])]
+    #[Assert\NotBlank(message:'Couleur du texte requis. Format : Hexadécimal')]
+    #[Assert\CssColor(formats: Assert\CssColor::HEX_LONG,
+                      messages: 'La coulour doit être au format hexadécimal de 6 carachtères')]
     private ?string $color_txt = null;
 
     #[ORM\OneToMany(mappedBy: 'stream', targetEntity: Message::class, orphanRemoval: true)]

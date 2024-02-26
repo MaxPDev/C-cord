@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
@@ -72,22 +73,36 @@ class UserController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator
         ): JsonResponse
         {
             //? 5 étape :
             //?  1. Désérializer le content JSON en Objet de la classe voulu
-            //?  2. Faire persister et i'objet et inscrit dans la BD
-            //?  3. Sérializer l'objet créé en JSON en vu du return
-            //?  4. Obtenir l'URL de la ressource
-            //?  5. Return le JSON obtenu, avec la réponse HTTP adéquate et la nouvel URI
+            //?  2. Vérifier les données avec un validateur
+            //?  3. Faire persister et i'objet et inscrit dans la BD
+            //?  4. Sérializer l'objet créé en JSON en vu du return
+            //?  5. Obtenir l'URL de la ressource
+            //?  6. Return le JSON obtenu, avec la réponse HTTP adéquate et la nouvel URI
 
             //! Contrôler pseudo unique
+            //TODO: Faire ce contrôle
 
             $user = $serializer->deserialize(
                 $request->getContent(), 
                 User::class,
                 'json');
+
+            // Validation du format des données
+            $errors = $validator->validate($user);
+            if ($errors->count() > 0) {
+                return new JsonResponse(
+                    $serializer->serialize($errors,'json'),
+                    JsonResponse::HTTP_BAD_REQUEST,
+                    [],
+                    true);
+            }
+            
 
             $em->persist($user);
             $em->flush();
@@ -122,6 +137,7 @@ class UserController extends AbstractController
         UserRepository $userRepository,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
+        ValidatorInterface $validator
     ):JsonResponse
     {
         // Récupération de l'id User
@@ -130,6 +146,17 @@ class UserController extends AbstractController
 
         // Ajout de l'utilisateur dansl room
         $room->addUser($userRepository->find($idUser));
+
+        // Validation du format des données
+        $errors = $validator->validate($room);
+        if ($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors,'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
+        
 
         // Peristance de la donnée et écriture dans la BD
         $em->persist($room);
@@ -158,7 +185,8 @@ class UserController extends AbstractController
             Request $request,
             SerializerInterface $serializer,
             EntityManagerInterface $em,
-            User $currentUser
+            User $currentUser,
+            ValidatorInterface $validator
         ): JsonResponse
         {
             $userUpdated = $serializer->deserialize(
@@ -166,6 +194,17 @@ class UserController extends AbstractController
                 User::class,
                 'json',
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
+
+            // Validation du format des données
+            $errors = $validator->validate($userUpdated);
+            if ($errors->count() > 0) {
+                return new JsonResponse(
+                    $serializer->serialize($errors,'json'),
+                    JsonResponse::HTTP_BAD_REQUEST,
+                    [],
+                    true);
+            }
+            
 
             $em->persist($userUpdated);
             $em->flush();
