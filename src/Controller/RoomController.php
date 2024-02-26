@@ -15,12 +15,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 use Symfony\Component\HttpFoundation\Response; //? Utile ?
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RoomController extends AbstractController
 {
@@ -78,11 +80,32 @@ class RoomController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator
     ): JsonResponse
     {
-        // Création de l'objet et insertion dans la DB
+        // Création de l'objet
         $room = $serializer->deserialize($request->getContent(), Room::class,'json');
+        
+        // Vérification des erreurs
+        $errors = $validator->validate($room);
+
+        if ($errors->count() > 0) {
+
+            //* Si utilisation du subscriber :
+            // throw new HttpException(
+            //     JsonResponse::HTTP_BAD_REQUEST,
+            //     "Mauvaise requête"
+            // );
+
+            return new JsonResponse(
+                $serializer->serialize($errors, 'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
+        
+        // Peristence et écriture de la BD
         $em->persist($room);
         $em->flush();
 
@@ -95,7 +118,11 @@ class RoomController extends AbstractController
             ['id' => $room->getId()],
             UrlGeneratorInterface::ABSOLUTE_URL);
 
-        return new JsonResponse($room_JSON, Response::HTTP_CREATED, ['location'=> $location], true);
+        return new JsonResponse(
+            $room_JSON, 
+            JsonResponse::HTTP_CREATED, 
+            ['location'=> $location], 
+            true);
     }
 
 
@@ -118,7 +145,8 @@ class RoomController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        Room $currentRoom
+        Room $currentRoom,
+        ValidatorInterface $validator
     ): JsonResponse
     {
         $updatesRoom = $serializer->deserialize(
@@ -127,10 +155,19 @@ class RoomController extends AbstractController
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentRoom]);
 
+        $errors = $validator->validate($updatesRoom);
+        if($errors->count() > 0) {
+            return new JsonResponse(
+                $serializer->serialize($errors, 'json'),
+                JsonResponse::HTTP_BAD_REQUEST,
+                [],
+                true);
+        }
+
         $em->persist($updatesRoom);
         $em->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     #[Route('/api/rooms/{id}', name:'ccord_deleteRoom', methods:['DELETE'])]
@@ -142,7 +179,7 @@ class RoomController extends AbstractController
         $em->remove($room);
         $em->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
 

@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
@@ -21,6 +22,11 @@ class Room
 
     #[ORM\Column(length: 255)]
     #[Groups(["getRooms","getRoom",'getMessage','getStreams'])]
+    #[Assert\NotBlank(message: "Nom de room requis")]
+    #[Assert\Length(min:3, max: 255, 
+      minMessage:"Nom de la room : {{ limit }} caractères minimum",
+      maxMessage:"Nom de la room : {{ limit }} caractères maximum")]
+
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
