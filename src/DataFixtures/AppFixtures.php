@@ -9,13 +9,47 @@ use App\Entity\Room;
 use App\Entity\User;
 use App\Entity\Stream;
 use App\Entity\Message;
+use App\Entity\UserAuth;
+
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+
+    private $userPasswordHasher;
+
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    {
+        $this->userPasswordHasher = $userPasswordHasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
+
+
         // $product = new Product();
         // $manager->persist($product);
+
+        //*    I_   $user_lambda utilisateur de base.
+        //*         Écrire des message dans 1 room, dans tout channels
+        //TODO:II_  $user_room_owner 1 utilisateur pouvant créer des channel,
+        //TODO:    et donner ce pouvoir à un autre.
+        //?    III__Pourquoi pas user_room_admin pouvant gérer, 
+        //?        en plus de la créatin de channel et de passer le pouvoir, 
+        //?        la suupression des message ? (only for practice
+        //*    IV_ $user_ccord_admin utilisateur pouvant gérer room, channel, 
+        //*        et message, (amdin)
+
+        //* I
+        $user_lambda = new UserAuth();
+        $user_lambda->setEmail('lambda@ccord.com');
+        $user_lambda->setRoles(["ROLE_USER"]);
+        $user_lambda->setPassword($this->userPasswordHasher->hashPassword($user_lambda, "lambda"));
+
+        $user_ccord_admin = new UserAuth();
+        $user_ccord_admin->setEmail('amdin@ccord.com');
+        $user_ccord_admin->setRoles(["ROLE_ADMIN"]);
+        $user_ccord_admin->setPassword($this->userPasswordHasher->hashPassword($user_ccord_admin, "admin"));
 
         $room1 = new Room();
         $room1->setName("Appart");
@@ -88,6 +122,10 @@ class AppFixtures extends Fixture
 
             $manager->persist($msg);
         }
+
+        $manager->persist($user_lambda);
+        $manager->persist($user_ccord_admin);
+
         
         $manager->persist($room1);
         $manager->persist($room2);
