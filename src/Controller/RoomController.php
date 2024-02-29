@@ -24,6 +24,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+// Gestions des droits
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 class RoomController extends AbstractController
 {
     #[Route('/api/rooms', name: 'ccord_getRooms', methods: ['GET'])]
@@ -76,6 +79,7 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/rooms', name:'ccord_createRoom', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous ne pouvez pas créer de Room, seul un admin peut.')]
     public function createRoom(
         Request $request,
         SerializerInterface $serializer,

@@ -47,7 +47,7 @@ class AppFixtures extends Fixture
         $user_lambda->setPassword($this->userPasswordHasher->hashPassword($user_lambda, "lambda"));
 
         $user_ccord_admin = new UserAuth();
-        $user_ccord_admin->setEmail('amdin@ccord.com');
+        $user_ccord_admin->setEmail('admin@ccord.com');
         $user_ccord_admin->setRoles(["ROLE_ADMIN"]);
         $user_ccord_admin->setPassword($this->userPasswordHasher->hashPassword($user_ccord_admin, "admin"));
 
