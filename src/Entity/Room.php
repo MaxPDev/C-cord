@@ -17,11 +17,11 @@ class Room
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRooms","getRoom","getUsers",'getMessage','getStreams','getStream'])]
+    #[Groups(["getAllRooms","getRoom","getUsers",'getMessage','getStreams','getStream'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRooms","getRoom",'getMessage','getStreams'])]
+    #[Groups(["getAllRooms","getRoom",'getMessage','getStreams'])]
     #[Assert\NotBlank(message: "Nom de room requis")]
     #[Assert\Length(min:3, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",
@@ -30,7 +30,7 @@ class Room
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(["getRooms","getRoom"])]
+    #[Groups(["getAllRooms","getRoom"])]
     private ?string $description = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'room')]

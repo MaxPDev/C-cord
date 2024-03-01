@@ -29,18 +29,21 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class RoomController extends AbstractController
 {
-    #[Route('/api/rooms', name: 'ccord_getRooms', methods: ['GET'])]
-    public function getRooms(
+    #[Route('/api/rooms', name: 'ccord_getAllRooms', methods: ['GET'])]
+    public function getAllRooms(
         RoomRepository $roomRepository,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        Request $request //* Pour pagination
     ): JsonResponse
     {
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
         
-        $rooms = $roomRepository->findAll();
+        $rooms = $roomRepository->findAllWithPagination( $page, $limit );
         $rooms_JSON = $serializer->serialize(
             $rooms,
             'json', 
-            ['groups' => 'getRooms']);
+            ['groups' => 'getAllRooms']);
 
         return new JsonResponse(
             $rooms_JSON, 
@@ -69,7 +72,7 @@ class RoomController extends AbstractController
         $room_JSON = $serializer->serialize(
             $user->getRoom(),
             "json", 
-            ['groups' => 'getRooms']); //? créer un groupe getRoomsByUser avec l'lid USer ?
+            ['groups' => 'getAllRooms']); //? créer un groupe getRoomsByUser avec l'lid USer ?
 
         return new JsonResponse(
             $room_JSON,
@@ -79,7 +82,7 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/rooms', name:'ccord_createRoom', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous ne pouvez pas créer de Room, seul un admin peut.')]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas la permission de créer une Room.')]
     public function createRoom(
         Request $request,
         SerializerInterface $serializer,
@@ -175,6 +178,7 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/rooms/{id}', name:'ccord_deleteRoom', methods:['DELETE'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas la permission de créer une Room.')]
     public function deleteRoom(
         Room $room,
         EntityManagerInterface $em

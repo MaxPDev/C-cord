@@ -170,7 +170,7 @@ class UserController extends AbstractController
         $rommsByUser_JSON = $serializer->serialize(
             $user->getRoom(),
             'json',
-            ['groups'=>'getRooms']);
+            ['groups'=>'getAllRooms']);
 
         return new JsonResponse(
             $rommsByUser_JSON,
