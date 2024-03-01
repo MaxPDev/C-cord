@@ -16,19 +16,50 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class UserController extends AbstractController
 {
     #[Route(path:'/api/users', name: 'ccord_getUsers', methods: ['GET'])]
     public function getUsers(
         UserRepository $userRepository,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
-        $users = $userRepository->findAll();
-        $users_JSON = $serializer->serialize($users,'json', ['groups' => 'getUsers']);
+        // ID pour la mise en cache
+        $idCache = "getUsers";
 
-        return new JsonResponse($users_JSON, Response::HTTP_OK, [], true);
+        // Retour de l'élément mis en cache, sinon récupération de puise le repository en JSON
+        $users_JSON = $cachePool->get(
+            $idCache,
+            function (ItemInterface $item) use ($userRepository, $serializer) {
+                
+                // Tag pour le nettoyage du cache
+                $item->tag('usersCache');
+
+                // Récupération des users depuis le repository
+                $users = $userRepository->findAll();
+
+                // Retour sérializer en JSON de la récupération des données
+                //* Sérializer en JSON ici pour "neutraliser" le lay loading de Doctrine,
+                //* Les sous entités n'étant pas chargé avant utilisations, ici les sérizaliser
+                //* Si on retournait une uniquement dpeuis le repository, et après cette fonction on serialisait,
+                //* les sous entité ne seraient pas présentes, puisque non utilisées/chargées.
+                return $serializer->serialize(
+                    $users,
+                    'json', 
+                    ['groups' => 'getUsers']);        
+            });
+        
+
+        // Retour de la liste des Users en JSON
+        return new JsonResponse(
+            $users_JSON, 
+            Response::HTTP_OK, 
+            [], 
+            true);
     }
 
     #[Route(path:'/api/users/{id}', name:'ccord_getUser', methods: ['GET'])]
@@ -216,9 +247,11 @@ class UserController extends AbstractController
         #[Route(path:'/api/users/{id}', name:'ccord_deleteUser', methods: ['DELETE'])]
         public function deleteUser(
             User $user,
-            EntityManagerInterface $em
-        )
+            EntityManagerInterface $em,
+            TagAwareCacheInterface $cachePool
+        ): JsonResponse
         {
+            $cachePool->invalidateTags(["usersCache"]);
             $em->remove($user);
             $em->flush();
 

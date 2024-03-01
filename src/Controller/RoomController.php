@@ -26,6 +26,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 // Gestions des droits
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class RoomController extends AbstractController
 {
@@ -33,18 +35,39 @@ class RoomController extends AbstractController
     public function getAllRooms(
         RoomRepository $roomRepository,
         SerializerInterface $serializer,
-        Request $request //* Pour pagination
+        Request $request, //* Pour pagination
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        // N° de page
         $page = $request->get('page', 1);
+        // Limite de résultat par page
         $limit = $request->get('limit', 3);
         
-        $rooms = $roomRepository->findAllWithPagination( $page, $limit );
+        // ID pour la mise en cache
+        $idCache = "getAllRooms-" . $page . "-" . $limit;
+
+        // Retour de l'élément mis en cache, sinon récupération depuis le repository
+        $rooms = $cachePool->get(
+            $idCache, 
+            function (ItemInterface $item) use ($roomRepository, $page, $limit)
+            {
+                // Tag pour le nettoyage du cache
+                $item->tag("roomsCache");
+
+                // retour de la récupération des données
+                return $roomRepository->findAllWithPagination($page, $limit);
+            });
+
+        // $rooms = $roomRepository->findAllWithPagination($page, $limit);
+
+        // Sérialisation de l'objet en JSON
         $rooms_JSON = $serializer->serialize(
             $rooms,
             'json', 
             ['groups' => 'getAllRooms']);
 
+        // Retour de la liste des Rooms en JSON
         return new JsonResponse(
             $rooms_JSON, 
             Response::HTTP_OK, 
