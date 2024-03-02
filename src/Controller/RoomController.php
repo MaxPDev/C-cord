@@ -48,24 +48,22 @@ class RoomController extends AbstractController
         $idCache = "getAllRooms-" . $page . "-" . $limit;
 
         // Retour de l'élément mis en cache, sinon récupération depuis le repository
-        $rooms = $cachePool->get(
+        $rooms_JSON = $cachePool->get(
             $idCache, 
-            function (ItemInterface $item) use ($roomRepository, $page, $limit)
+            function (ItemInterface $item) use (
+                $roomRepository, $page, $limit, $serializer)
             {
                 // Tag pour le nettoyage du cache
                 $item->tag("allRoomsCache");
 
-                // Retour de la récupération des données
-                return $roomRepository->findAllWithPagination($page, $limit);
+                // Retour de la récupération des données sérialisé en JSON
+                return $serializer->serialize(
+                    $roomRepository->findAllWithPagination($page, $limit),
+                    'json',
+                    ['groups' => 'getAllRooms']);
+                
             });
 
-        // $rooms = $roomRepository->findAllWithPagination($page, $limit);
-
-        // Sérialisation de l'objet en JSON
-        $rooms_JSON = $serializer->serialize(
-            $rooms,
-            'json', 
-            ['groups' => 'getAllRooms']);
 
         // Retour de la liste des Rooms en JSON
         return new JsonResponse(
@@ -105,13 +103,15 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/rooms', name:'ccord_createRoom', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas la permission de créer une Room.')]
+    //todo Permissions temporairement commentés
+    // #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas la permission de créer une Room.')]
     public function createRoom(
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         // Création de l'objet
@@ -134,8 +134,11 @@ class RoomController extends AbstractController
                 [],
                 true);
         }
+
+        // Tag du cache des Rooms invalidés
+        $cachePool->invalidateTags(["allRoomsCache"]);
         
-        // Peristence et écriture de la BD
+        // Peristence et écriture de la room dans laBD
         $em->persist($room);
         $em->flush();
 
@@ -176,7 +179,8 @@ class RoomController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         Room $currentRoom,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         $updatesRoom = $serializer->deserialize(
@@ -194,6 +198,10 @@ class RoomController extends AbstractController
                 true);
         }
 
+        // Tag du cache des Rooms invalidés
+        $cachePool->invalidateTags(["allRoomsCache"]);
+
+        // Mise à jour de la room dans la BD
         $em->persist($updatesRoom);
         $em->flush();
 
@@ -201,12 +209,18 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/rooms/{id}', name:'ccord_deleteRoom', methods:['DELETE'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas la permission de créer une Room.')]
+    //todo: Permission temporairement commenté
+    // #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas la permission de créer une Room.')]
     public function deleteRoom(
         Room $room,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        // Tag du cache des Rooms invalidés
+        $cachePool->invalidateTags(["allRoomsCache"]);
+
+        // Suppresion de la room de la BD
         $em->remove($room);
         $em->flush();
 

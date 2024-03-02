@@ -35,7 +35,7 @@ class UserController extends AbstractController
         $limit = $request->get('limit', 10);
 
         // ID pour la mise en cache
-        $idCache = "getAllUsers" . $page . "-" . $limit;
+        $idCache = "getAllUsers-" . $page . "-" . $limit;
 
         // Retour de l'élément mis en cache, sinon récupération de puise le repository en JSON
         $users_JSON = $cachePool->get(

@@ -35,7 +35,7 @@ class MessageController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
-        // N° Page, 1 par défaut
+        // N° de page, 1 par défaut
         $page = $request->get('page', 1);
         // limte de résultat par page, 10 par défaut
         $limit = $request->get('limit', 10);

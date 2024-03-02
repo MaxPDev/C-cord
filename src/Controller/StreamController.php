@@ -37,7 +37,7 @@ class StreamController extends AbstractController
         $limit = $request->get('limit', 10);
 
         // ID pour la mise en cache
-        $idCache = "getAllStreams" . $page . "-" . $limit;
+        $idCache = "getAllStreams-" . $page . "-" . $limit;
 
         // Retour de l'élément mis en cache, sinon récupération depuis le repository
         $streams_JSON = $cachePool->get(
@@ -143,7 +143,7 @@ class StreamController extends AbstractController
         // print_r($id);
         // print_r($room->getId());
 
-        // Tag du cache des Messages invalidé
+        // Tag du cache des streams invalidé
         $cachePool->invalidateTags(["allStreamsCache"]);
 
         // Insertion du Stream dans la BD
@@ -192,7 +192,7 @@ class StreamController extends AbstractController
                 true);
         }
 
-        // Tag du cache des Messages invalidé
+        // Tag du cache des streams invalidé
         $cachePool->invalidateTags(["allStreamsCache"]);
 
         // Mise à jour dans la BD des modification du stream
@@ -209,7 +209,7 @@ class StreamController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
-        // Tag du cache des Messages invalidé
+        // Tag du cache des streams invalidé
         $cachePool->invalidateTags(["allStreamsCache"]);
 
         // Suppresion du stream dans la BD
