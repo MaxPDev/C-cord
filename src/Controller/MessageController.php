@@ -155,7 +155,8 @@ class MessageController extends AbstractController
         UserRepository $userRepository,
         StreamRepository $streamRepository,
         RoomRepository $roomRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         // Création de l'objet et insertion dans la DB
@@ -189,6 +190,10 @@ class MessageController extends AbstractController
         $message->setStream($streamRepository->find($idStream));
 
      
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allMessagesCache"]);
+
+        // Insertion dans la BD
         $em->persist($message);
         $em->flush();
 
@@ -223,7 +228,8 @@ class MessageController extends AbstractController
         StreamRepository $streamRepository,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         $message = $serializer->deserialize(
@@ -253,6 +259,10 @@ class MessageController extends AbstractController
         $message->setUser($userRepository->find($idUser));
         $message->setStream($streamRepository->find($idStream));
 
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allMessagesCache"]);
+
+        // Insertion dans la BD
         $em->persist($message);
         $em->flush();
 
@@ -284,7 +294,8 @@ class MessageController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         // Création de l'objet message depuis les données en JSON reçues
@@ -320,6 +331,9 @@ class MessageController extends AbstractController
         // Attribution de l'utilisation depuis l'id reçu des données
         $newMessage->setUser($userRepository->find($idUser));
 
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allMessagesCache"]);
+
         // Peristance des données et écriture dans la BD
         $em->persist($newMessage);
         $em->flush();
@@ -353,7 +367,8 @@ class MessageController extends AbstractController
         Message $currentMessage,
         EntityManagerInterface $em,
         StreamRepository $streamRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         $updatedMessage = $serializer->deserialize(
@@ -380,6 +395,9 @@ class MessageController extends AbstractController
         $idStream = $content['idStream'] ?? -1;
         $updatedMessage->setStream($streamRepository->find($idStream));
 
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allMessagesCache"]);
+
         // On persiste $updateMessage pas $currentMessage pour persister uniquement les modifications
         $em->persist($updatedMessage);
         $em->flush();
@@ -390,9 +408,14 @@ class MessageController extends AbstractController
     #[Route('/api/messages/{id}', name: 'ccord_deleteMessage', methods: ['DELETE'])]
     public function deleteMessage(
         Message $message,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allMessagesCache"]);
+
+        // Suppresion de la BD
         $em->remove($message);
         $em->flush();
 

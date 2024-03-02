@@ -39,9 +39,9 @@ class RoomController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
-        // N° de page
+        // N° de page, 1 par défaut
         $page = $request->get('page', 1);
-        // Limite de résultat par page
+        // Limite de résultat par page, 10 par défaut
         $limit = $request->get('limit', 10);
         
         // ID pour la mise en cache
@@ -53,9 +53,9 @@ class RoomController extends AbstractController
             function (ItemInterface $item) use ($roomRepository, $page, $limit)
             {
                 // Tag pour le nettoyage du cache
-                $item->tag("roomsCache");
+                $item->tag("allRoomsCache");
 
-                // retour de la récupération des données
+                // Retour de la récupération des données
                 return $roomRepository->findAllWithPagination($page, $limit);
             });
 

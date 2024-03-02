@@ -251,7 +251,12 @@ class UserController extends AbstractController
             TagAwareCacheInterface $cachePool
         ): JsonResponse
         {
+            // Tags du cache des Users invalidé
+            //* Pour que la prochaine requête d'obtention des users se fasse
+            //* en allant chercher dans la BD
             $cachePool->invalidateTags(["allUsersCache"]);
+
+            // Suppresion dans la base de données
             $em->remove($user);
             $em->flush();
 
