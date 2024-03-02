@@ -25,22 +25,29 @@ class UserController extends AbstractController
     public function getAllUsers(
         UserRepository $userRepository,
         SerializerInterface $serializer,
+        Request $request,
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        // N° de page, 1 par défaut
+        $page = $request->get('page', 1);
+        // limte de résultat par page, 10 par défaut
+        $limit = $request->get('limit', 10);
+
         // ID pour la mise en cache
-        $idCache = "getAllUsers";
+        $idCache = "getAllUsers" . $page . "-" . $limit;
 
         // Retour de l'élément mis en cache, sinon récupération de puise le repository en JSON
         $users_JSON = $cachePool->get(
             $idCache,
-            function (ItemInterface $item) use ($userRepository, $serializer) {
+            function (ItemInterface $item) use (
+                $userRepository, $page, $limit, $serializer) {
                 
                 // Tag pour le nettoyage du cache
                 $item->tag('allUsersCache');
 
                 // Récupération des users depuis le repository
-                $users = $userRepository->findAll();
+                $users = $userRepository->findAllWithPagination($page, $limit);
 
                 // Retour sérializer en JSON de la récupération des données
                 //* Sérializer en JSON ici pour "neutraliser" le lay loading de Doctrine,
@@ -105,7 +112,8 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
         ): JsonResponse
         {
             //? 5 étape :
@@ -135,6 +143,10 @@ class UserController extends AbstractController
             }
             
 
+            // Tags du cache des Users invalidé
+            $cachePool->invalidateTags(["allUsersCache"]);
+
+            // Insertion de l'user dans la BD
             $em->persist($user);
             $em->flush();
 
@@ -159,7 +171,7 @@ class UserController extends AbstractController
         }
     
 
-    //! Sûrement à repenser / réécrire
+    //! Sûrement à repenser / réécrire A METTRE DANS ROOM ?
     //TODO: room/id/user POST lorsqu'un user rentre dans une room : Faire avec le bon système d'authentification de user
     #[Route("/api/rooms/{id}/user", name:"ccord_userJoinRoom", methods: ["POST"])]
     public function userToRoom(
@@ -217,7 +229,8 @@ class UserController extends AbstractController
             SerializerInterface $serializer,
             EntityManagerInterface $em,
             User $currentUser,
-            ValidatorInterface $validator
+            ValidatorInterface $validator,
+            TagAwareCacheInterface $cachePool
         ): JsonResponse
         {
             $userUpdated = $serializer->deserialize(
@@ -236,7 +249,10 @@ class UserController extends AbstractController
                     true);
             }
             
+            // Tags du cache des Users invalidé
+            $cachePool->invalidateTags(["allUsersCache"]);
 
+            // Mise à jour dans le BD
             $em->persist($userUpdated);
             $em->flush();
 
