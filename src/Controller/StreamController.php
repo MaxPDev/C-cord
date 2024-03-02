@@ -15,6 +15,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class StreamController extends AbstractController
 {
@@ -24,22 +26,43 @@ class StreamController extends AbstractController
     #[Route(path:"/api/streams", name:"ccord_getAllStreams", methods: ["GET"])]
     public function getAllStreams(
         SerializerInterface $serializer, 
-        StreamRepository $streamRepository
+        StreamRepository $streamRepository,
+        Request $request,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
-    {
-        $streams = $streamRepository->findAll();
-        $streams_JSON = $serializer->serialize(
-            $streams,
-            "json",
-            ['groups' => 'getAllStreams']);
+{
+        // N° Page, 1 par défaut
+        $page = $request->get('page', 1);
+        // limte de résultat par page, 10 par défaut
+        $limit = $request->get('limit', 10);
 
-            //todo: renvoyer Link plutôt que id/name de room
+        // ID pour la mise en cache
+        $idCache = "getAllStreams" . $page . "-" . $limit;
+
+        // Retour de l'élément mis en cache, sinon récupération depuis le repository
+        $streams_JSON = $cachePool->get(
+            $idCache,
+            function(ItemInterface $item) use (
+                $streamRepository, $page, $limit, $serializer)
+            {
+                // Tag pour le nettoyage du cache
+                $item->tag("allStreamsCache");
+
+                // Retour en JSON de la récupération des données (ici pour ByPass LazyLoading)
+                return $serializer->serialize(
+                    $streamRepository->findAllWithPagination($page, $limit),
+                    "json",
+                    ['groups' => 'getAllStreams']);
+            }
+        );
+
+        //todo: renvoyer Link plutôt que id/name de room
         
-            return new JsonResponse(
-                $streams_JSON, 
-                Response::HTTP_OK, 
-                [], 
-                true);
+        return new JsonResponse(
+            $streams_JSON, 
+            Response::HTTP_OK, 
+            [], 
+            true);
     }
 
 
@@ -92,7 +115,8 @@ class StreamController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         $stream = $serializer->deserialize(
@@ -119,6 +143,10 @@ class StreamController extends AbstractController
         // print_r($id);
         // print_r($room->getId());
 
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allStreamsCache"]);
+
+        // Insertion du Stream dans la BD
         $em->persist($stream);
         $em->flush();
 
@@ -144,7 +172,8 @@ class StreamController extends AbstractController
         SerializerInterface $serializer,
         Stream $currentStream,
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         $updatedStream = $serializer->deserialize(
@@ -163,6 +192,10 @@ class StreamController extends AbstractController
                 true);
         }
 
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allStreamsCache"]);
+
+        // Mise à jour dans la BD des modification du stream
         $em->persist($updatedStream);
         $em->flush();
 
@@ -172,9 +205,14 @@ class StreamController extends AbstractController
     #[Route(path:'/api/streams/{id}', name:'ccord_deleteStream', methods: ['DELETE'])]
     public function deleteStream(
         Stream $stream,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        // Tag du cache des Messages invalidé
+        $cachePool->invalidateTags(["allStreamsCache"]);
+
+        // Suppresion du stream dans la BD
         $em->remove($stream);
         $em->flush();
 

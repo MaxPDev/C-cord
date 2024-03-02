@@ -46,7 +46,8 @@ class MessageController extends AbstractController
         // Retour de l'élément mis en cache, sinon récupération depuis le repository
         $messages_JSON = $cachePool->get(
             $idCache,
-            function(ItemInterface $item) use ($messageRepository, $page, $limit, $serializer)
+            function(ItemInterface $item) use (
+                $messageRepository, $page, $limit, $serializer)
             {
                 // Tag pour le nettoyage du cache
                 $item->tag("allMessagesCache");

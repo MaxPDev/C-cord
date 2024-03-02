@@ -21,6 +21,14 @@ class StreamRepository extends ServiceEntityRepository
         parent::__construct($registry, Stream::class);
     }
 
+    public function findAllWithPagination(int $page, int $limit): array
+    {
+        $qb = $this->createQueryBuilder("s")
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return Stream[] Returns an array of Stream objects
 //     */
