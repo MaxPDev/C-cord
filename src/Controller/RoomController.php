@@ -42,7 +42,7 @@ class RoomController extends AbstractController
         // N° de page
         $page = $request->get('page', 1);
         // Limite de résultat par page
-        $limit = $request->get('limit', 3);
+        $limit = $request->get('limit', 10);
         
         // ID pour la mise en cache
         $idCache = "getAllRooms-" . $page . "-" . $limit;

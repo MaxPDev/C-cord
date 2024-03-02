@@ -37,7 +37,7 @@ class UserController extends AbstractController
             function (ItemInterface $item) use ($userRepository, $serializer) {
                 
                 // Tag pour le nettoyage du cache
-                $item->tag('usersCache');
+                $item->tag('allUsersCache');
 
                 // Récupération des users depuis le repository
                 $users = $userRepository->findAll();
@@ -251,7 +251,7 @@ class UserController extends AbstractController
             TagAwareCacheInterface $cachePool
         ): JsonResponse
         {
-            $cachePool->invalidateTags(["usersCache"]);
+            $cachePool->invalidateTags(["allUsersCache"]);
             $em->remove($user);
             $em->flush();
 

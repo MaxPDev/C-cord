@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class MessageController extends AbstractController
 {
@@ -28,12 +30,36 @@ class MessageController extends AbstractController
     #[Route(path:'/api/messages', name: 'ccord_getAllMessages', methods: ['GET'])]
     public function getAllMessages(
         MessageRepository $messageRepository,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        Request $request,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
-        $messages = $messageRepository->findAll();
-        //! Même groupe  que getOneMessage, mais si route vraiment utilisé, repenser. (Que les ids ?)
-        $messages_JSON = $serializer->serialize($messages, 'json', ['groups' => 'getOneMessage']);
+        // N° Page, 1 par défaut
+        $page = $request->get('page', 1);
+        // limte de résultat par page, 10 par défaut
+        $limit = $request->get('limit', 10);
+
+        // ID pour la mise en cache
+        $idCache = "getAllMessages" . $page . "-" . $limit;
+
+        // Retour de l'élément mis en cache, sinon récupération depuis le repository
+        $messages_JSON = $cachePool->get(
+            $idCache,
+            function(ItemInterface $item) use ($messageRepository, $page, $limit, $serializer)
+            {
+                // Tag pour le nettoyage du cache
+                $item->tag("allMessagesCache");
+
+                // Retour en JSON de la récupération des données (bypass LazyLoading)
+                return $serializer->serialize(
+                    $messageRepository->findAllWithPagination($page, $limit),
+                    'json',
+                    ['groups' => 'getOneMessage']
+                );
+            });
+        
+        // Retour de la liste des Users en JSON
         return new JsonResponse(
             $messages_JSON, 
             Response::HTTP_OK, 

@@ -21,6 +21,14 @@ class MessageRepository extends ServiceEntityRepository
         parent::__construct($registry, Message::class);
     }
 
+    public function findAllWithPagination(int $page, int $limit): array
+    {
+        $qb = $this->createQueryBuilder("m")
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return Message[] Returns an array of Message objects
 //     */
