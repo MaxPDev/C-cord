@@ -16,18 +16,18 @@ class Stream
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom",'getMessage', 'getStreams','getStream'])]
+    #[Groups(["getRoom",'getOneMessage', 'getAllStreams','getOneStream'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom",'getMessage','getStreams','getStream'])]
+    #[Groups(["getRoom",'getOneMessage','getAllStreams','getOneStream'])]
     #[Assert\NotBlank(message: "Nom du nouveau stream requis")]
     #[Assert\Length(min:1, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",
       maxMessage:"Nom de la room : {{ limit }} caractères maximum")]
     private ?string $name = null;
 
-    #[Groups(['getMessage','getStreams','getStream'])]
+    #[Groups(['getOneMessage','getAllStreams','getOneStream'])]
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message:'Couleur du fond requis. Format : Hexadécimal')]
     #[Assert\CssColor(formats: Assert\CssColor::HEX_LONG,
@@ -35,19 +35,19 @@ class Stream
     private ?string $color_bg = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getMessage','getStreams','getStream'])]
+    #[Groups(['getOneMessage','getAllStreams','getOneStream'])]
     #[Assert\NotBlank(message:'Couleur du texte requis. Format : Hexadécimal')]
     #[Assert\CssColor(formats: Assert\CssColor::HEX_LONG,
                       message: 'La couleur doit être au format hexadécimal de 6 charactères e.g. #2F2F2F')]
     private ?string $color_txt = null;
 
     #[ORM\OneToMany(mappedBy: 'stream', targetEntity: Message::class, orphanRemoval: true)]
-    #[Groups(['getStream'])]
+    #[Groups(['getOneStream'])]
     private Collection $messages;
 
     #[ORM\ManyToOne(inversedBy: 'streams')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getStreams','getStream'])]
+    #[Groups(['getAllStreams','getOneStream'])]
     private ?Room $room = null;
 
     public function __construct()

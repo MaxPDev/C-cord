@@ -21,8 +21,8 @@ class StreamController extends AbstractController
     //todo: obtenir stream / room :roo/id/stream | et stream message : stream/id/messag
 
     //* Route uniquement pour dev
-    #[Route(path:"/api/streams", name:"ccord_streams", methods: ["GET"])]
-    public function getAllStream(
+    #[Route(path:"/api/streams", name:"ccord_getAllStreams", methods: ["GET"])]
+    public function getAllStreams(
         SerializerInterface $serializer, 
         StreamRepository $streamRepository
     ): JsonResponse
@@ -31,7 +31,7 @@ class StreamController extends AbstractController
         $streams_JSON = $serializer->serialize(
             $streams,
             "json",
-            ['groups' => 'getStreams']);
+            ['groups' => 'getAllStreams']);
 
             //todo: renvoyer Link plutôt que id/name de room
         
@@ -53,7 +53,7 @@ class StreamController extends AbstractController
         $stream_JSON = $serializer->serialize(
             $stream,
             'json',
-            ['groups' => 'getStream']);
+            ['groups' => 'getOneStream']);
 
         return new JsonResponse(
             $stream_JSON,
@@ -75,7 +75,7 @@ class StreamController extends AbstractController
         $streams_JSON = $serializer->serialize(
             $streamsByRoom,
             "json",
-            ['groups' => 'getStreams']);
+            ['groups' => 'getAllStreams']);
 
         return new JsonResponse(
             $streams_JSON, 
@@ -122,7 +122,7 @@ class StreamController extends AbstractController
         $em->persist($stream);
         $em->flush();
 
-        $stream_JSON = $serializer->serialize($stream,'json', ['groups' => 'getStreams']);
+        $stream_JSON = $serializer->serialize($stream,'json', ['groups' => 'getAllStreams']);
 
         $location = $urlGenerator->generate(
             'ccord_getOneStream',

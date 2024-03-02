@@ -16,11 +16,11 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom","getUsers",'getOneUser','getMessage'])]
+    #[Groups(["getRoom","getAllUsers",'getOneUser','getOneMessage'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom", "getUsers",'getOneUser','getMessage'])]
+    #[Groups(["getRoom", "getAllUsers",'getOneUser','getOneMessage'])]
     #[Assert\NotBlank(message: "Pseudo requis")]
     #[Assert\Length(min:3, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",
@@ -28,17 +28,17 @@ class User
     private ?string $pseudo = null;
 
     #[ORM\Column]
-    #[Groups(["getUsers",'getOneUser'])]
+    #[Groups(["getAllUsers",'getOneUser'])]
     #//? Assert ??
     private ?bool $isAdmin = null;
 
     //? Later : fileType ? Image ?
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(["getUsers",'getOneUser'])]
+    #[Groups(["getAllUsers",'getOneUser'])]
     private ?string $avatar = null;
 
     #[ORM\ManyToMany(targetEntity: Room::class, mappedBy: 'user')]
-    #[Groups(["getUsers",])]
+    #[Groups(["getAllUsers",])]
     private Collection $room;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Message::class, orphanRemoval: true)]

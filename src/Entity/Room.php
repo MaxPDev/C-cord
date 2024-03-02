@@ -17,11 +17,11 @@ class Room
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getAllRooms","getRoom","getUsers",'getMessage','getStreams','getStream'])]
+    #[Groups(["getAllRooms","getRoom","getAllUsers",'getOneMessage','getAllStreams','getOneStream'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getAllRooms","getRoom",'getMessage','getStreams'])]
+    #[Groups(["getAllRooms","getRoom",'getOneMessage','getAllStreams'])]
     #[Assert\NotBlank(message: "Nom de room requis")]
     #[Assert\Length(min:3, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",

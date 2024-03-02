@@ -21,15 +21,15 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class UserController extends AbstractController
 {
-    #[Route(path:'/api/users', name: 'ccord_getUsers', methods: ['GET'])]
-    public function getUsers(
+    #[Route(path:'/api/users', name: 'ccord_getAllUsers', methods: ['GET'])]
+    public function getAllUsers(
         UserRepository $userRepository,
         SerializerInterface $serializer,
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
         // ID pour la mise en cache
-        $idCache = "getUsers";
+        $idCache = "getAllUsers";
 
         // Retour de l'élément mis en cache, sinon récupération de puise le repository en JSON
         $users_JSON = $cachePool->get(
@@ -50,7 +50,7 @@ class UserController extends AbstractController
                 return $serializer->serialize(
                     $users,
                     'json', 
-                    ['groups' => 'getUsers']);        
+                    ['groups' => 'getAllUsers']);        
             });
         
 
@@ -62,7 +62,7 @@ class UserController extends AbstractController
             true);
     }
 
-    #[Route(path:'/api/users/{id}', name:'ccord_getUser', methods: ['GET'])]
+    #[Route(path:'/api/users/{id}', name:'ccord_getOneUser', methods: ['GET'])]
     public function getOneUser(
         User $user,
         SerializerInterface $serializer
@@ -89,7 +89,7 @@ class UserController extends AbstractController
         $roomsByUser_JSON = $serializer->serialize(
             $room->getUser(),
             'json',
-            ['groups'=>'getUsers']);
+            ['groups'=>'getAllUsers']);
 
         return new JsonResponse(
             $roomsByUser_JSON,
@@ -146,7 +146,7 @@ class UserController extends AbstractController
             //? Ou absolute PATH ? adresse uniquement à partir de /api
             //? Regarder version Slim, URL en var... recomprendre
             $location = $urlGenerator->generate(
-                'ccord_getUser',
+                'ccord_getOneUser',
                 ['id' => $user->getId()],
                 UrlGeneratorInterface::ABSOLUTE_URL);
 

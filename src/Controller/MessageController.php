@@ -25,15 +25,15 @@ class MessageController extends AbstractController
 {
 
     //! Route uniquement pour récupérer ID facilement pour dev. Inutile dans l'application ?
-    #[Route(path:'/api/messages', name: 'ccord_getMessages', methods: ['GET'])]
-    public function getMessages(
+    #[Route(path:'/api/messages', name: 'ccord_getAllMessages', methods: ['GET'])]
+    public function getAllMessages(
         MessageRepository $messageRepository,
         SerializerInterface $serializer
     ): JsonResponse
     {
         $messages = $messageRepository->findAll();
-        //! Même groupe  que getMessage, mais si route vraiment utilisé, repenser. (Que les ids ?)
-        $messages_JSON = $serializer->serialize($messages, 'json', ['groups' => 'getMessage']);
+        //! Même groupe  que getOneMessage, mais si route vraiment utilisé, repenser. (Que les ids ?)
+        $messages_JSON = $serializer->serialize($messages, 'json', ['groups' => 'getOneMessage']);
         return new JsonResponse(
             $messages_JSON, 
             Response::HTTP_OK, 
@@ -41,7 +41,7 @@ class MessageController extends AbstractController
             true);
     }
     
-    #[Route(path:'/api/messages/{id}', name: 'ccord_getMessage', methods: ['GET'])]
+    #[Route(path:'/api/messages/{id}', name: 'ccord_getOneMessage', methods: ['GET'])]
     public function getOneMessage(
         Message $message,
         SerializerInterface $serializer
@@ -50,7 +50,7 @@ class MessageController extends AbstractController
         $message_JSON = $serializer->serialize(
             $message, 
             'json', 
-            ['groups' => 'getMessage']);
+            ['groups' => 'getOneMessage']);
 
         return new JsonResponse(
             $message_JSON,
@@ -70,7 +70,7 @@ class MessageController extends AbstractController
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
-            ['groups' => 'getMessage' ]);
+            ['groups' => 'getOneMessage' ]);
 
         return new JsonResponse(
             $messages_JSON,
@@ -91,7 +91,7 @@ class MessageController extends AbstractController
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
-            ['groups' => 'getMessage' ]);
+            ['groups' => 'getOneMessage' ]);
 
         return new JsonResponse(
             $messages_JSON,
@@ -111,7 +111,7 @@ class MessageController extends AbstractController
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
-            ['groups' => 'getMessage' ]);
+            ['groups' => 'getOneMessage' ]);
 
         return new JsonResponse(
             $messages_JSON,
@@ -170,11 +170,11 @@ class MessageController extends AbstractController
         $message_JSON = $serializer->serialize(
             $message, 
             'json', 
-            ['groups'=> 'getMessage']);
+            ['groups'=> 'getOneMessage']);
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
-            'ccord_getMessage', 
+            'ccord_getOneMessage', 
             ['id' => $message->getId()], 
             UrlGeneratorInterface::ABSOLUTE_URL);    
 
@@ -234,11 +234,11 @@ class MessageController extends AbstractController
         $message_JSON = $serializer->serialize(
             $message, 
             'json', 
-            ['groups'=> 'getMessage']);
+            ['groups'=> 'getOneMessage']);
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
-            'ccord_getMessage', 
+            'ccord_getOneMessage', 
             ['id' => $message->getId()], 
             UrlGeneratorInterface::ABSOLUTE_URL);    
 
@@ -303,11 +303,11 @@ class MessageController extends AbstractController
         $message_JSON = $serializer->serialize(
             $newMessage, 
             'json', 
-            ['groups'=> 'getMessage']);
+            ['groups'=> 'getOneMessage']);
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
-            'ccord_getMessage', 
+            'ccord_getOneMessage', 
             ['id' => $newMessage->getId()], 
             UrlGeneratorInterface::ABSOLUTE_URL);  
 

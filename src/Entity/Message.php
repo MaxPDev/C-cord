@@ -15,16 +15,16 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom",'getMessage','getStream'])]
+    #[Groups(["getRoom",'getOneMessage','getOneStream'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['getMessage','getStream'])]
+    #[Groups(['getOneMessage','getOneStream'])]
     #[Assert\NotBlank(message: "Écrivez un message !")]
     private ?string $text = null;
 
     #[ORM\Column]
-    #[Groups(['getMessage'])] //? DateImmutableNormalizer use ?
+    #[Groups(['getOneMessage'])] //? DateImmutableNormalizer use ?
     //? Demande une string si ces Assert sont actifs
     // #[Assert\NotNull(message:'Une date doit être fournie pour ce message')]
     // #[Assert\DateTime(message:'Une date doit être fourni pour ce message')]
@@ -34,17 +34,17 @@ class Message
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getMessage'])]
+    #[Groups(['getOneMessage'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getMessage'])]
+    #[Groups(['getOneMessage'])]
     private ?Room $room = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['getMessage'])]
+    #[Groups(['getOneMessage'])]
     private ?Stream $stream = null;
 
     public function __construct()
