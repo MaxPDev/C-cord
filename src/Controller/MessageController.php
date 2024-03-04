@@ -13,7 +13,12 @@ use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
+//* Serializer-pack annotations
+// use Symfony\Component\Serializer\SerializerInterface;
+//* JMS Serializer annotations
+use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -74,10 +79,18 @@ class MessageController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse
     {
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $context = SerializationContext::create()->setGroups(['getOneMessage']);
+
         $message_JSON = $serializer->serialize(
             $message, 
             'json', 
-            ['groups' => 'getOneMessage']);
+            //* If Serialize-pack from Symfony is used
+            // ['groups' => 'getOneMessage'])
+            //* If JMS Serializer is used, so $context is
+            $context
+        );
 
         return new JsonResponse(
             $message_JSON,
