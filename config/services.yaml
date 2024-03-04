@@ -22,3 +22,7 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    jms_serializer.object_constructor:
+        class: App\Utils\InitializedObjectConstructor
+        arguments: ['\JMS\Serializer\Construction\UnserializeObjectConstructor']

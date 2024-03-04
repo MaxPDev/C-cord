@@ -21,6 +21,7 @@ use JMS\Serializer\SerializerInterface;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\DeserializationContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -385,13 +386,32 @@ class MessageController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        // //* JMS Serializer methode 1 : Recréer un objet
+        // $newMessage = $serializer->deserialize(
+        //     $request->getContent(), 
+        //     Message::class,
+        //     'json');
+        // $currentMessage->setText($newMessage->getText());
+        
+        $context = DeserializationContext::create();
+        $context->setAttribute('deserialization-constructor-target', $currentMessage);
+        
         $updatedMessage = $serializer->deserialize(
+            //* Version Symfony deserializer
+            // $request->getContent(),
+            // Message::class,
+            // 'json',
+            // //? On "repopulate" le message qui arrive de la requete
+            // //? Comment cette variable est utilisée ensuite ??
+            // [AbstractNormalizer::OBJECT_TO_POPULATE => $currentMessage]
+            
+            //* Version JMS Serializer methode 2 AVEC deserializer dans objet
             $request->getContent(),
             Message::class,
+            // get_class($currentMessage),
             'json',
-            //? On "repopulate" le message qui arrive de la requete
-            //? Comment cette variable est utilisée ensuite ??
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentMessage]);
+            $context
+            );
 
         // Validation du format des données
         $errors = $validator->validate($updatedMessage);
