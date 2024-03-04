@@ -41,7 +41,7 @@ class MessageController extends AbstractController
         $limit = $request->get('limit', 10);
 
         // ID pour la mise en cache
-        $idCache = "getAllMessages" . $page . "-" . $limit;
+        $idCache = "getAllMessages-" . $page . "-" . $limit;
 
         // Retour de l'élément mis en cache, sinon récupération depuis le repository
         $messages_JSON = $cachePool->get(

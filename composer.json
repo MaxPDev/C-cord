@@ -24,7 +24,8 @@
         "symfony/security-bundle": "6.4.*",
         "symfony/serializer": "6.4.*",
         "symfony/validator": "6.4.*",
-        "symfony/yaml": "6.4.*"
+        "symfony/yaml": "6.4.*",
+        "willdurand/hateoas-bundle": "*"
     },
     "config": {
         "allow-plugins": {
