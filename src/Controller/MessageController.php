@@ -49,11 +49,15 @@ class MessageController extends AbstractController
         // ID pour la mise en cache
         $idCache = "getAllMessages-" . $page . "-" . $limit;
 
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $context = SerializationContext::create()->setGroups(['getOneMessage']);
+
         // Retour de l'élément mis en cache, sinon récupération depuis le repository
         $messages_JSON = $cachePool->get(
             $idCache,
             function(ItemInterface $item) use (
-                $messageRepository, $page, $limit, $serializer)
+                $messageRepository, $page, $limit, $serializer, $context)
             {
                 // Tag pour le nettoyage du cache
                 $item->tag("allMessagesCache");
@@ -62,7 +66,8 @@ class MessageController extends AbstractController
                 return $serializer->serialize(
                     $messageRepository->findAllWithPagination($page, $limit),
                     'json',
-                    ['groups' => 'getOneMessage']
+                    // ['groups' => 'getOneMessage']
+                    $context
                 );
             });
         
@@ -107,11 +112,17 @@ class MessageController extends AbstractController
         MessageRepository $messageRepository
         ): JsonResponse
     {
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $context = SerializationContext::create()->setGroups(['getOneMessage']);
+
         $messages = $messageRepository->findByStream($stream);
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
-            ['groups' => 'getOneMessage' ]);
+            // ['groups' => 'getOneMessage' ]
+            $context
+        );
 
         return new JsonResponse(
             $messages_JSON,
@@ -128,11 +139,17 @@ class MessageController extends AbstractController
         MessageRepository $messageRepository
         ): JsonResponse
     {
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $context = SerializationContext::create()->setGroups(['getOneMessage']);
+
         $messages = $messageRepository->findByRoom($room);
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
-            ['groups' => 'getOneMessage' ]);
+            // ['groups' => 'getOneMessage' ]
+            $context
+        );
 
         return new JsonResponse(
             $messages_JSON,
@@ -148,11 +165,18 @@ class MessageController extends AbstractController
         MessageRepository $messageRepository
         ): JsonResponse
     {
+
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $context = SerializationContext::create()->setGroups(['getOneMessage']);
+
         $messages = $messageRepository->findByUser($user);
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",
-            ['groups' => 'getOneMessage' ]);
+            // ['groups' => 'getOneMessage' ]
+            $context
+        );
 
         return new JsonResponse(
             $messages_JSON,
@@ -174,11 +198,17 @@ class MessageController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        $message = new Message();
+        $context = DeserializationContext::create();
+        $context->setAttribute('deserialization-constructor-target', $message);
+
         // Création de l'objet et insertion dans la DB
         $message = $serializer->deserialize(
             $request->getContent(), 
             Message::class, 
-            'json');
+            'json',
+            $context
+        );
 
         // Validation du format des données
         $errors = $validator->validate($message);
@@ -212,11 +242,17 @@ class MessageController extends AbstractController
         $em->persist($message);
         $em->flush();
 
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $contextSer = SerializationContext::create()->setGroups(['getOneMessage']);
+
         // Objet sérialisé en JSON pour envoyer un retour de ce qui est créé
         $message_JSON = $serializer->serialize(
             $message, 
             'json', 
-            ['groups'=> 'getOneMessage']);
+            // ['groups'=> 'getOneMessage']
+            $contextSer
+        );
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
@@ -247,10 +283,15 @@ class MessageController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        $message = new Message();
+        $context = DeserializationContext::create();
+        $context->setAttribute('deserialization-constructor-target', $message);
+
         $message = $serializer->deserialize(
             $request->getContent(),
             Message::class,
-            'json'
+            'json',
+            $context
         );
         
         // Validation du format des données
@@ -281,11 +322,16 @@ class MessageController extends AbstractController
         $em->persist($message);
         $em->flush();
 
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $contextSer = SerializationContext::create()->setGroups(['getOneMessage']);
+
         // Objet sérialisé en JSON pour envoyer un retour de ce qui est créé
         $message_JSON = $serializer->serialize(
             $message, 
             'json', 
-            ['groups'=> 'getOneMessage']);
+            $contextSer
+        );
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
@@ -313,11 +359,16 @@ class MessageController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        $message = new Message();
+        $context = DeserializationContext::create();
+        $context->setAttribute('deserialization-constructor-target', $message);
+
         // Création de l'objet message depuis les données en JSON reçues
         $newMessage = $serializer->deserialize(
             $request->getContent(),
             Message::class,
-            "json"
+            "json",
+            $context
         );
 
         // Validation du format des données
@@ -353,12 +404,17 @@ class MessageController extends AbstractController
         $em->persist($newMessage);
         $em->flush();
 
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $contextSer = SerializationContext::create()->setGroups(['getOneMessage']);
 
         // Objet sérialisé en JSON pour envoyer un retour de ce qui est créé
         $message_JSON = $serializer->serialize(
             $newMessage, 
             'json', 
-            ['groups'=> 'getOneMessage']);
+            // ['groups'=> 'getOneMessage']
+            $contextSer
+        );
 
         // Appelle une route,on utilise le nom de la route de GET Message
         $location = $urlGenerator->generate(
