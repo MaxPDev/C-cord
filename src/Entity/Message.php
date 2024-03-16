@@ -11,7 +11,41 @@ use Doctrine\ORM\Mapping as ORM;
 //* JMS Serializer annotations
 use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Hateoas\Configuration\Annotation as Hateoas;
 
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href = @Hateoas\Route(
+ *          "ccord_getOneMessage",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getOneMessage")
+ * )
+ * 
+ * @Hateoas\Relation(
+ *      "delete",
+ *      href = @Hateoas\Route(
+ *          "ccord_deleteMessage",
+ *          parameters = { "id" = "expr(object.getId())" },
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getOneMessage", 
+ *      )
+ * )
+ *
+ * @Hateoas\Relation(
+ *      "update",
+ *      href = @Hateoas\Route(
+ *          "ccord_updateMessage",
+ *          parameters = { "id" = "expr(object.getId())" },
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getOneMessage", 
+ *      )
+ * )
+ *
+ */
+//TODO: Après 'exclusion = [..],' rajouter  'excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),'
+//todo: quand auth réactivé
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 class Message
 {
