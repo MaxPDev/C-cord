@@ -10,6 +10,7 @@ use App\Repository\MessageRepository;
 use App\Repository\RoomRepository;
 use App\Repository\StreamRepository;
 use App\Repository\UserRepository;
+use App\Service\VersioningService;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\DeserializationContext;
@@ -87,10 +88,13 @@ class RoomController extends AbstractController
     #[Route('/api/rooms/{id}', name:'ccord_getOneRoom', methods: ['GET'])]
     public function getOneRoom(
         Room $room, 
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        VersioningService $versioningService
     ): JsonResponse
     {
+        $version = $versioningService->getVersion(); //* Le service compare lui-même avec la requête
         $context = SerializationContext::create()->setGroups(['getOneRoom']);
+        $context->setVersion(($version));
         $room_JSON = $serializer->serialize(
             $room, 
             'json', 

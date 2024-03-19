@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation\Since;
 
 /**
  * @Hateoas\Relation(
@@ -68,6 +69,7 @@ class Room
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(["getAllRooms","getOneRoom"])]
+    #[Since("2.0")]
     private ?string $description = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'room')]
