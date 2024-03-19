@@ -12,12 +12,17 @@ use App\Repository\StreamRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\DeserializationContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
+//* Serializer-pack annotations
+// use Symfony\Component\Serializer\SerializerInterface;
+//* JMS Serializer annotations
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 
 use Symfony\Component\HttpFoundation\Response; //? Utile ?
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -47,11 +52,15 @@ class RoomController extends AbstractController
         // ID pour la mise en cache
         $idCache = "getAllRooms-" . $page . "-" . $limit;
 
+        //* Only for JMS Serializer
+        // Context for group serializing
+        $context = SerializationContext::create()->setGroups(['getAllRooms']);
+
         // Retour de l'élément mis en cache, sinon récupération depuis le repository
         $rooms_JSON = $cachePool->get(
             $idCache, 
             function (ItemInterface $item) use (
-                $roomRepository, $page, $limit, $serializer)
+                $roomRepository, $page, $limit, $serializer, $context)
             {
                 // Tag pour le nettoyage du cache
                 $item->tag("allRoomsCache");
@@ -60,7 +69,9 @@ class RoomController extends AbstractController
                 return $serializer->serialize(
                     $roomRepository->findAllWithPagination($page, $limit),
                     'json',
-                    ['groups' => 'getAllRooms']);
+                    // ['groups' => 'getAllRooms'];
+                    $context
+                );
                 
             });
 
@@ -73,13 +84,19 @@ class RoomController extends AbstractController
             true);
     }
 
-    #[Route('/api/rooms/{id}', name:'ccord_getRoom', methods: ['GET'])]
-    public function getRoom(
+    #[Route('/api/rooms/{id}', name:'ccord_getOneRoom', methods: ['GET'])]
+    public function getOneRoom(
         Room $room, 
         SerializerInterface $serializer
     ): JsonResponse
     {
-        $room_JSON = $serializer->serialize($room, 'json', ['groups' => 'getRoom']);
+        $context = SerializationContext::create()->setGroups(['getOneRoom']);
+        $room_JSON = $serializer->serialize(
+            $room, 
+            'json', 
+            // ['groups' => 'getOneRoom']
+            $context
+        );
         return new JsonResponse($room_JSON, Response::HTTP_OK, ['accept'=>'json'], true);
     }
 
@@ -90,10 +107,15 @@ class RoomController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse
     {
+        $context = SerializationContext::create()->setGroups(['getAllRooms']);
+
         $room_JSON = $serializer->serialize(
             $user->getRoom(),
             "json", 
-            ['groups' => 'getAllRooms']); //? créer un groupe getRoomsByUser avec l'lid USer ?
+            // ['groups' => 'getAllRooms'],
+            $context
+        ); 
+            //? créer un groupe getRoomsByUser avec l'lid USer ?
 
         return new JsonResponse(
             $room_JSON,
@@ -114,8 +136,17 @@ class RoomController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        $room = new Room();
+        $context = DeserializationContext::create();
+        $context->setAttribute('deserialization-constructor-target', $room);
+
         // Création de l'objet
-        $room = $serializer->deserialize($request->getContent(), Room::class,'json');
+        $room = $serializer->deserialize(
+            $request->getContent(), 
+            Room::class,
+            'json',
+            $context
+        );
         
         // Validation du format des données
         $errors = $validator->validate($room);
@@ -142,12 +173,21 @@ class RoomController extends AbstractController
         $em->persist($room);
         $em->flush();
 
+         //* Only for JMS Serializer
+        // Context for group serializing
+        $contextSer = SerializationContext::create()->setGroups(['getOneRoom']);
+
         // Objet sérializé en JSON pour envoyer un retour de ce qui est crée
-        $room_JSON = $serializer->serialize($room, 'json', ['groups'=> 'getRoom']);
+        $room_JSON = $serializer->serialize(
+            $room, 
+            'json', 
+            // ['groups'=> 'getOneRoom']
+            $contextSer
+        );
 
         // Applle une route, on utilise de nom de la route de GET Room
         $location = $urlGenerator->generate(
-            'ccord_getRoom', 
+            'ccord_getOneRoom', 
             ['id' => $room->getId()],
             UrlGeneratorInterface::ABSOLUTE_URL);
 
@@ -183,11 +223,16 @@ class RoomController extends AbstractController
         TagAwareCacheInterface $cachePool
     ): JsonResponse
     {
+        $context = DeserializationContext::create();
+        $context->setAttribute('deserialization-constructor-target', $currentRoom);
+
         $updatesRoom = $serializer->deserialize(
             $request->getContent(), 
             Room::class,
             'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentRoom]);
+            // [AbstractNormalizer::OBJECT_TO_POPULATE => $currentRoom]
+            $context
+        );
 
         $errors = $validator->validate($updatesRoom);
         if($errors->count() > 0) {

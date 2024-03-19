@@ -20,11 +20,11 @@ class Stream
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom",'getOneMessage', 'getAllStreams','getOneStream'])]
+    #[Groups(["getOneRoom",'getOneMessage', 'getAllStreams','getOneStream'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom",'getOneMessage','getAllStreams','getOneStream'])]
+    #[Groups(["getOneRoom",'getOneMessage','getAllStreams','getOneStream'])]
     #[Assert\NotBlank(message: "Nom du nouveau stream requis")]
     #[Assert\Length(min:1, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",

@@ -52,7 +52,7 @@ class Message
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom",'getOneMessage','getOneStream'])]
+    #[Groups(["getOneRoom",'getOneMessage','getOneStream'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]

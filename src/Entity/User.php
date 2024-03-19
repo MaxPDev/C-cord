@@ -20,11 +20,11 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getRoom","getAllUsers",'getOneUser','getOneMessage'])]
+    #[Groups(["getOneRoom","getAllUsers",'getOneUser','getOneMessage'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getRoom", "getAllUsers",'getOneUser','getOneMessage'])]
+    #[Groups(["getOneRoom", "getAllUsers",'getOneUser','getOneMessage'])]
     #[Assert\NotBlank(message: "Pseudo requis")]
     #[Assert\Length(min:3, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",

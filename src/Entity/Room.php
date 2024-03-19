@@ -20,11 +20,11 @@ class Room
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getAllRooms","getRoom","getAllUsers",'getOneMessage','getAllStreams','getOneStream'])]
+    #[Groups(["getAllRooms","getOneRoom","getAllUsers",'getOneMessage','getAllStreams','getOneStream'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getAllRooms","getRoom",'getOneMessage','getAllStreams'])]
+    #[Groups(["getAllRooms","getOneRoom",'getOneMessage','getAllStreams'])]
     #[Assert\NotBlank(message: "Nom de room requis")]
     #[Assert\Length(min:3, max: 255, 
       minMessage:"Nom de la room : {{ limit }} caractères minimum",
@@ -33,19 +33,19 @@ class Room
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(["getAllRooms","getRoom"])]
+    #[Groups(["getAllRooms","getOneRoom"])]
     private ?string $description = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'room')]
-    #[Groups(["getRoom"])]
+    #[Groups(["getOneRoom"])]
     private Collection $user;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Message::class, orphanRemoval: true)]
-    #[Groups(["getRoom"])]
+    #[Groups(["getOneRoom"])]
     private Collection $messages;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Stream::class, orphanRemoval: true)]
-    #[Groups(["getRoom"])]
+    #[Groups(["getOneRoom"])]
     private Collection $streams;
 
     public function __construct()
