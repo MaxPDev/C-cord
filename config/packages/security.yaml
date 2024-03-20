@@ -45,8 +45,9 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
     #! Réactiver les deux premier pour teste. UserAuth non utilisé pour v001, seul User.
-        # # - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        # # - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
