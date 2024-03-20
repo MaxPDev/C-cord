@@ -29,9 +29,61 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Attributes as OA;
+
 class MessageController extends AbstractController
 {
 
+    //* Exemple de doc https://github.com/zircote/swagger-php/tree/master/Examples
+    /**
+     * **Retourne l'emsemble des Messages**
+     * 
+     * * Gère la mise en cache pour un exact même requête selon les paramètre de pagination
+     * * Récupère les message depuis le repsository
+     * * Règle les groupes de champs retournées
+     * * Créer la réponse JSON, et l'envoie.
+     * 
+     * 
+     * @param MessageRepository $messageRepository 
+     * @param SerializerInterface $serializer JMS Serializer
+     * @param Request $request
+     * @param TagAwareCacheInterface $cachePool
+     * @return JsonResponse
+     */
+    #[OA\Get(
+        description: "Obtenir la liste des messages",
+        tags: ["Messages"]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Tableau paginé de messages',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Message::class, groups: ['getOneMessage']))
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Authorisation nécessaire',
+    )]
+    #[OA\Parameter(
+        name: 'page',
+        in: 'query',
+        description: 'Numéro de page',
+        schema: new OA\Schema(type: 'int')
+        )]
+    #[OA\Parameter(
+        name: 'limit',
+        in: 'query',
+        description: 'limite de résultat par page',
+        schema: new OA\Schema(type: 'int')
+        )]
+    // #[OA\Tag(
+    //     name: "Message",
+    //     description: "test de Description depuis tag"
+    // )]
     //! Route uniquement pour récupérer ID facilement pour dev. Inutile dans l'application ?
     #[Route(path:'/api/messages', name: 'ccord_getAllMessages', methods: ['GET'])]
     public function getAllMessages(
