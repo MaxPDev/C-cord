@@ -14,7 +14,10 @@ use JMS\Serializer\Annotation\Groups;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
+use ApiPlatform\Metadata\ApiResource;
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ApiResource()]
 class User
 {
     #[ORM\Id]

@@ -14,7 +14,10 @@ use JMS\Serializer\Annotation\Groups;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
+use ApiPlatform\Metadata\ApiResource;
+
 #[ORM\Entity(repositoryClass: StreamRepository::class)]
+#[ApiResource()]
 class Stream
 {
     #[ORM\Id]

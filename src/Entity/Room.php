@@ -16,6 +16,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation\Since;
 
+// use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+
 /**
  * @Hateoas\Relation(
  *      "self",
@@ -50,6 +53,7 @@ use JMS\Serializer\Annotation\Since;
 //TODO: Après 'exclusion = [..],' rajouter  'excludeIf = "expr(not is_granted('ROLE_ADMIN'))"),'
 //todo: quand auth réactivé
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
+#[ApiResource()]
 class Room
 {
     #[ORM\Id]
