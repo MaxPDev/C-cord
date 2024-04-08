@@ -16,3 +16,9 @@ api_platform:
             rfc_7807_compliant_errors: true
     event_listeners_backward_compatibility_layer: false
     keep_legacy_inflector: false
+    # To use Bearer token, to use "Authorization" field in header
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header

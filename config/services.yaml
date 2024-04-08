@@ -27,3 +27,7 @@ services:
     jms_serializer.object_constructor:
         class: App\Utils\InitializedObjectConstructor
         arguments: ['\JMS\Serializer\Construction\UnserializeObjectConstructor']
+
+    # App\OpenApi\JwtDecorator:
+    #     decorates: 'api_platform.openapi.factory'
+    #     arguments: ['@.inner']
