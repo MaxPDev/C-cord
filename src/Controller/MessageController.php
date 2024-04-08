@@ -195,7 +195,8 @@ class MessageController extends AbstractController
         // Context for group serializing
         $context = SerializationContext::create()->setGroups(['getOneMessage']);
 
-        $messages = $messageRepository->findByRoom($room);
+        // $messages = $messageRepository->findByRoom($room);
+        $messages = $messageRepository->findRecentMessagesByRoom($room);
         $messages_JSON = $serializer->serialize(
             $messages,
             "json",

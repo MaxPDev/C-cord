@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Message;
+use App\Entity\Room;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -27,6 +28,17 @@ class MessageRepository extends ServiceEntityRepository
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
         return $qb->getQuery()->getResult();
+    }
+
+    public function findRecentMessagesByRoom(Room $room): array
+    {
+        $qb = $this->createQueryBuilder("m")
+            ->andWhere('m.room = :room')
+            ->setParameter('room', $room)
+            ->orderBy('m.created_at', 'DESC');
+
+        return $qb->getQuery()->getResult();
+
     }
 
 //    /**
